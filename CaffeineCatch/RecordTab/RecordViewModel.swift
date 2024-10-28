@@ -9,8 +9,9 @@ import Foundation
 import RxSwift
 
 final class RecordViewModel {
+    let isLoadedSectionData = PublishSubject<Void>()
     var nonCaffeineInTakeData: [InTakeNonCaffeineData] = []
-    let section = BehaviorSubject(value: [
+    let nonCaffeineSectionData = BehaviorSubject(value: [
         SectionOfInTakeNonCaffeineData(
             header: "nonCaffeine",
             items: [InTakeNonCaffeineData(nonCaffeine: "물 (250ml)"),
@@ -18,4 +19,15 @@ final class RecordViewModel {
                     InTakeNonCaffeineData(nonCaffeine: "보리차 (300ml)")
                    ])
     ])
+    
+    func loadSectionData() {
+        let testValue = [SectionOfInTakeNonCaffeineData(
+            header: "nonCaffeine",
+            items: [
+                InTakeNonCaffeineData(nonCaffeine: "물 (180ml)"),
+                InTakeNonCaffeineData(nonCaffeine: "우유 (180ml)"),
+                InTakeNonCaffeineData(nonCaffeine: "보리차 (300ml)")
+            ])]
+        nonCaffeineSectionData.onNext(testValue)
+    }
 }

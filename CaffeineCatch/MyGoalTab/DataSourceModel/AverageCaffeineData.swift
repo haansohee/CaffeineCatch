@@ -8,7 +8,7 @@
 import Foundation
 import RxDataSources
 
-struct SectionOfCustomData {
+struct SectionOfAverageCaffeineData {
     let header: String
     var items: [Item]
     
@@ -18,10 +18,10 @@ struct SectionOfCustomData {
     }
 }
 
-extension SectionOfCustomData: SectionModelType {
+extension SectionOfAverageCaffeineData: SectionModelType {
     typealias Item = AverageCaffeineData
     
-    init(original: SectionOfCustomData, items: [AverageCaffeineData]) {
+    init(original: SectionOfAverageCaffeineData, items: [AverageCaffeineData]) {
         self = original
         self.items = items
     }

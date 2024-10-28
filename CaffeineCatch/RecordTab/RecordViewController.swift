@@ -12,6 +12,8 @@ import RxSwift
 import RxDataSources
 
 final class RecordViewController: UIViewController {
+    private let recordViewModel: RecordViewModel
+    private let disposeBag = DisposeBag()
     private let recordView = RecordView()
     private let calenderView = CalendarView()
     private let recordAddButton: UIButton = {
@@ -25,11 +27,22 @@ final class RecordViewController: UIViewController {
         return button
     }()
     
+    init(recordViewModel: RecordViewModel = RecordViewModel()) {
+        self.recordViewModel = recordViewModel
+        super.init(nibName: nil, bundle: nil)
+        self.recordViewModel.loadSectionData()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureRecordViewController()
         configureFSCalendar()
         setLayoutConstraints()
+        bindAll()
     }
 }
 
@@ -41,7 +54,6 @@ extension RecordViewController {
         navigationItem.title = "기록"
         [calenderView, recordView, recordAddButton].forEach { view.addSubview($0) }
         recordView.nonCaffenineInTakeCollecionView.delegate = self
-        recordView.nonCaffenineInTakeCollecionView.dataSource = self
         view.backgroundColor = .secondarySystemBackground
     }
     
@@ -83,11 +95,14 @@ extension RecordViewController {
     
     //MARK: Bind
     private func bindAll() {
-        
+        bindNonCaffeineInTakeCollectionViewSection()
     }
     
     private func bindNonCaffeineInTakeCollectionViewSection() {
-        
+        recordViewModel.nonCaffeineSectionData
+            .bind(to: recordView.nonCaffenineInTakeCollecionView.rx.items(dataSource: createCollecitonViewDataSource())
+            )
+            .disposed(by: disposeBag)
     }
 }
 
@@ -104,19 +119,7 @@ extension RecordViewController: FSCalendarDataSource {
     }
 }
 
-extension RecordViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NonCaffeineInTakeCollectionViewCell.reuseIdentifier, for: indexPath) as? NonCaffeineInTakeCollectionViewCell else { return UICollectionViewCell() }
-        return cell
-    }
-    
-    
-}
-
+// MARK: CollectionView Delegate
 extension RecordViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         

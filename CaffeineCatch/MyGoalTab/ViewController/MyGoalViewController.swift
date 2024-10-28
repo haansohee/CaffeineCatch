@@ -18,6 +18,7 @@ final class MyGoalViewController: UIViewController {
     init(myPageViewModel: MyGoalViewModel = MyGoalViewModel()) {
         self.myPageViewModel = myPageViewModel
         super.init(nibName: nil, bundle: nil)
+        self.myPageViewModel.loadSectionData()
     }
     
     required init?(coder: NSCoder) {
@@ -53,8 +54,8 @@ extension MyGoalViewController {
     }
     
     //MARK: Create CollectionView DataSource
-    private func createCollectionViewDataSource() -> RxCollectionViewSectionedReloadDataSource<SectionOfCustomData>{
-        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfCustomData>(configureCell: {dataSource, collectionView, indexPath, item in
+    private func createCollectionViewDataSource() -> RxCollectionViewSectionedReloadDataSource<SectionOfAverageCaffeineData>{
+        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfAverageCaffeineData>(configureCell: {dataSource, collectionView, indexPath, item in
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AverageCaffeineCollectionViewCell.reuseIdentifier, for: indexPath) as? AverageCaffeineCollectionViewCell else { return UICollectionViewCell() }
             cell.configureAverageCaffeineLabel(item.caffeineData, item.mgData)
             return cell
@@ -68,12 +69,13 @@ extension MyGoalViewController {
     }
     
     private func bindAverageCaffeineCollectionViewSection() {
-        myPageViewModel.section
+        myPageViewModel.averageCaffeineSectionData
             .bind(to: myGoalView.averageCaffeineCollectionView.rx.items(dataSource: createCollectionViewDataSource()))
             .disposed(by: disposeBag)
     }
 }
 
+// MARK: CollectionView Delegate
 extension MyGoalViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let size = (collectionView.bounds.size.width - 10) / 2
