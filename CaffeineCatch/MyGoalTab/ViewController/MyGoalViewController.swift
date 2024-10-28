@@ -33,6 +33,7 @@ final class MyGoalViewController: UIViewController {
 }
 
 extension MyGoalViewController {
+    //MARK: Configure
     private func configureMyPageViewController() {
         myGoalView.translatesAutoresizingMaskIntoConstraints = false
         myGoalView.averageCaffeineCollectionView.delegate = self
@@ -41,6 +42,7 @@ extension MyGoalViewController {
         view.backgroundColor = .secondarySystemBackground
     }
     
+    //MARK: Set Layout Constraint
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
             myGoalView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -50,6 +52,7 @@ extension MyGoalViewController {
         ])
     }
     
+    //MARK: Create CollectionView DataSource
     private func createCollectionViewDataSource() -> RxCollectionViewSectionedReloadDataSource<SectionOfCustomData>{
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfCustomData>(configureCell: {dataSource, collectionView, indexPath, item in
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AverageCaffeineCollectionViewCell.reuseIdentifier, for: indexPath) as? AverageCaffeineCollectionViewCell else { return UICollectionViewCell() }

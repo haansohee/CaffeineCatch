@@ -20,12 +20,16 @@ final class MainTabBarController: UITabBarController {
         tabBar.tintColor = .label
         tabBar.backgroundColor = .systemBackground
         tabBar.layer.cornerRadius = 24.0
+        tabBar.layer.borderWidth = 0.5
+        tabBar.layer.borderColor = UIColor.separator.cgColor
     }
     
     private func setupMainTabBar() {
         let myGoalTab = UINavigationController(rootViewController: MyGoalViewController())
         myGoalTab.tabBarItem = UITabBarItem(title: "Goal", image: UIImage(systemName: "person.circle"), tag: 0)
-        viewControllers = [myGoalTab]
+        let recordTab = UINavigationController(rootViewController: RecordViewController())
+        recordTab.tabBarItem = UITabBarItem(title: "기록", image: UIImage(systemName: "square.and.pencil"), tag: 1)
+        viewControllers = [myGoalTab, recordTab]
         tabBarController?.setViewControllers(viewControllers, animated: true)
     }
 }
