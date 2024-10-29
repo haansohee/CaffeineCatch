@@ -19,7 +19,6 @@ final class MainTabBarController: UITabBarController {
         tabBar.layer.masksToBounds = false
         tabBar.tintColor = .label
         tabBar.backgroundColor = .systemBackground
-        tabBar.layer.cornerRadius = 24.0
         tabBar.layer.borderWidth = 0.5
         tabBar.layer.borderColor = UIColor.separator.cgColor
     }
