@@ -96,12 +96,22 @@ extension RecordViewController {
     //MARK: Bind
     private func bindAll() {
         bindNonCaffeineInTakeCollectionViewSection()
+        bindRecordAddButton()
     }
     
     private func bindNonCaffeineInTakeCollectionViewSection() {
         recordViewModel.nonCaffeineSectionData
             .bind(to: recordView.nonCaffenineInTakeCollecionView.rx.items(dataSource: createCollecitonViewDataSource())
             )
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindRecordAddButton() {
+        recordAddButton.rx.tap
+            .asDriver()
+            .drive(onNext: {[weak self] _ in
+                self?.navigationController?.pushViewController(RecordEntryViewController(), animated: true)
+            })
             .disposed(by: disposeBag)
     }
 }
