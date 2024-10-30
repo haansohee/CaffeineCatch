@@ -11,7 +11,7 @@ final class AverageCaffeineCollectionViewCell: UICollectionViewCell, ReuseIdenti
     let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 20.0, weight: .semibold)
+        label.font = .systemFont(ofSize: 13.0, weight: .semibold)
         label.numberOfLines = 0
         label.textAlignment = .left
         label.textColor = .label
@@ -21,7 +21,7 @@ final class AverageCaffeineCollectionViewCell: UICollectionViewCell, ReuseIdenti
     private let caffeineLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 14.0)
+        label.font = .systemFont(ofSize: 10.0)
         label.numberOfLines = 0
         label.textAlignment = .left
         label.textColor = .secondaryLabel

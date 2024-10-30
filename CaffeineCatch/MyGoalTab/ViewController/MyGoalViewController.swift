@@ -78,7 +78,7 @@ extension MyGoalViewController {
 // MARK: CollectionView Delegate
 extension MyGoalViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let size = (collectionView.bounds.size.width - 10) / 2
+        let size = (collectionView.bounds.size.width - 20) / 3
         return CGSize(width: size, height: size)
     }
 }

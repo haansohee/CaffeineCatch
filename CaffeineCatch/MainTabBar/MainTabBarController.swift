@@ -25,7 +25,7 @@ final class MainTabBarController: UITabBarController {
     
     private func setupMainTabBar() {
         let myGoalTab = UINavigationController(rootViewController: MyGoalViewController())
-        myGoalTab.tabBarItem = UITabBarItem(title: "Goal", image: UIImage(systemName: "person.circle"), tag: 0)
+        myGoalTab.tabBarItem = UITabBarItem(title: "목표", image: UIImage(systemName: "person.circle"), tag: 0)
         let recordTab = UINavigationController(rootViewController: RecordViewController())
         recordTab.tabBarItem = UITabBarItem(title: "기록", image: UIImage(systemName: "square.and.pencil"), tag: 1)
         viewControllers = [myGoalTab, recordTab]
