@@ -12,7 +12,7 @@ final class MyGoalView: UIView {
     private let goalSettingView: UIImageView = {
         let view = UIImageView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.tintColor = UIColor(red: 164/255, green: 178/255, blue: 244/255, alpha: 1.0)
+        view.tintColor = .systemGray5
         view.image = UIImage(systemName: "cup.and.saucer.fill")
         return view
     }()
@@ -28,7 +28,7 @@ final class MyGoalView: UIView {
         return label
     }()
     
-    private let goalUpdateButton: AnimationButton = {
+    let goalUpdateButton: AnimationButton = {
         let button = AnimationButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("목표 수정하기", for: .normal)
