@@ -38,7 +38,7 @@ extension MyGoalViewController {
     private func configureMyPageViewController() {
         myGoalView.translatesAutoresizingMaskIntoConstraints = false
         myGoalView.averageCaffeineCollectionView.delegate = self
-        navigationItem.title = "My Goal"
+        navigationItem.title = "목표"
         view.addSubview(myGoalView)
         view.backgroundColor = .secondarySystemBackground
     }
