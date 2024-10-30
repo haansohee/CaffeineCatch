@@ -66,11 +66,21 @@ extension MyGoalViewController {
     //MARK: Bind
     private func bindAll() {
         bindAverageCaffeineCollectionViewSection()
+        bindGoalUpdateButton()
     }
     
     private func bindAverageCaffeineCollectionViewSection() {
         myPageViewModel.averageCaffeineSectionData
             .bind(to: myGoalView.averageCaffeineCollectionView.rx.items(dataSource: createCollectionViewDataSource()))
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindGoalUpdateButton() {
+        myGoalView.goalUpdateButton.rx.tap
+            .asDriver()
+            .drive(onNext: {[weak self] _ in
+                self?.present(MyGoalUpdateViewCotnroller(), animated: true)
+            })
             .disposed(by: disposeBag)
     }
 }
