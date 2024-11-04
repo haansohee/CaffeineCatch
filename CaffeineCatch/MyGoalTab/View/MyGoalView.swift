@@ -13,7 +13,7 @@ final class MyGoalView: UIView {
         let view = UIImageView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.tintColor = .systemGray5
-        view.image = UIImage(systemName: "cup.and.saucer.fill")
+        view.image = UIImage(named: "cup2.png")
         return view
     }()
     
@@ -22,7 +22,7 @@ final class MyGoalView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 14.0, weight: .bold)
         label.numberOfLines = 0
-        label.text = "나의 하루 카페인 섭취량\n목표는 2shot 이하예요. ✊🏻"
+        label.text = "나의 하루 카페인 섭취량 목표는\n\n2shot 이하예요. ✊🏻"
         label.textColor = .black
         label.textAlignment = .center
         return label
@@ -99,15 +99,15 @@ extension MyGoalView {
         NSLayoutConstraint.activate([
             goalSettingView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 24.0),
             goalSettingView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            goalSettingView.widthAnchor.constraint(equalToConstant: 340.0),
-            goalSettingView.heightAnchor.constraint(equalToConstant: 240.0),
+            goalSettingView.widthAnchor.constraint(equalToConstant: 300.0),
+            goalSettingView.heightAnchor.constraint(equalToConstant: 300.0),
             
-            goalSettingLabel.centerXAnchor.constraint(equalTo: goalSettingView.centerXAnchor),
-            goalSettingLabel.centerYAnchor.constraint(equalTo: goalSettingView.centerYAnchor),
-            goalSettingLabel.widthAnchor.constraint(equalTo: goalSettingView.widthAnchor),
-            goalSettingLabel.heightAnchor.constraint(equalTo: goalSettingView.heightAnchor),
+            goalSettingLabel.topAnchor.constraint(equalTo: goalSettingView.topAnchor, constant: 48.0),
+            goalSettingLabel.leadingAnchor.constraint(equalTo: goalSettingView.leadingAnchor, constant: 24.0),
+            goalSettingLabel.trailingAnchor.constraint(equalTo: goalSettingView.trailingAnchor, constant: -24.0),
+            goalSettingLabel.bottomAnchor.constraint(equalTo: goalSettingView.bottomAnchor, constant: -48.0),
             
-            goalUpdateButton.topAnchor.constraint(equalTo: goalSettingView.bottomAnchor, constant: 12.0),
+            goalUpdateButton.topAnchor.constraint(equalTo: goalSettingView.bottomAnchor),
             goalUpdateButton.centerXAnchor.constraint(equalTo: goalSettingView.centerXAnchor),
             goalUpdateButton.widthAnchor.constraint(equalToConstant: 120.0),
             goalUpdateButton.heightAnchor.constraint(equalToConstant: 40.0),
@@ -116,16 +116,6 @@ extension MyGoalView {
             recommandedLabel.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor, constant: 12.0),
             recommandedLabel.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor, constant: -12.0),
             recommandedLabel.heightAnchor.constraint(equalToConstant: 40.0),
-            
-//            goalSettingTextField.topAnchor.constraint(equalTo: goalSettingLabel.topAnchor),
-//            goalSettingTextField.leadingAnchor.constraint(equalTo: goalSettingLabel.trailingAnchor, constant: 8.0),
-//            goalSettingTextField.widthAnchor.constraint(equalToConstant: 120.0),
-//            goalSettingTextField.heightAnchor.constraint(equalTo: goalSettingLabel.heightAnchor),
-//            
-//            goalSettingButton.topAnchor.constraint(equalTo: goalSettingLabel.topAnchor),
-//            goalSettingButton.leadingAnchor.constraint(equalTo: goalSettingTextField.trailingAnchor, constant: 12.0),
-//            goalSettingButton.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-//            goalSettingButton.heightAnchor.constraint(equalTo: goalSettingLabel.heightAnchor),
             
             averageCaffeineLabel.topAnchor.constraint(equalTo: recommandedLabel.bottomAnchor, constant: 24.0),
             averageCaffeineLabel.leadingAnchor.constraint(equalTo: recommandedLabel.leadingAnchor),

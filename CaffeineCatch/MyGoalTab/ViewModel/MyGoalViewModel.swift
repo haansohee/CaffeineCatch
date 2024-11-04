@@ -7,6 +7,8 @@
 
 import Foundation
 import RxSwift
+import UIKit
+import CoreData
 
 final class MyGoalViewModel {
     var averageCaffeine: [AverageCaffeineData] = []
@@ -15,6 +17,7 @@ final class MyGoalViewModel {
         header: "averageCaffeine",
         items: [AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg")]
                 )])
+    let isSavedCoreData = PublishSubject<Bool>()
     
     func loadSectionData() {
         let averageCaffeineData = [SectionOfAverageCaffeineData(
@@ -30,5 +33,44 @@ final class MyGoalViewModel {
                 AverageCaffeineData(caffeineData: "탄산음료\n(500ml, 1병)", mgData: "83mg")
             ])]
         averageCaffeineSectionData.onNext(averageCaffeineData)
+    }
+    
+    func saveCoreDataModelTest() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        let entity = NSEntityDescription.entity(forEntityName: "UserInfo", in: context)
+        let userInfo = User(usualCaffeineTime: Date(), usualCaffeineIntake: 150, goalCaffeineIntake: 100, notificationEnabled: true)
+        
+        if let entity = entity {
+            let newUserInfo = NSManagedObject(entity: entity, insertInto: context)
+            newUserInfo.setValue(userInfo.usualCaffeineTime, forKey: "usualCaffeineTime")
+            newUserInfo.setValue(userInfo.usualCaffeineIntake, forKey: "usualCaffeineIntake")
+            newUserInfo.setValue(userInfo.goalCaffeineIntake, forKey: "goalCaffeineIntake")
+            newUserInfo.setValue(userInfo.notificationEnabled, forKey: "notificationEnabled")
+            do {
+                try context.save()
+                isSavedCoreData.onNext(true)
+            } catch {
+                isSavedCoreData.onNext(false)
+                print(error.localizedDescription)
+            }
+        }
+    }
+    
+    func fetchCoreDataModelTest() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+        
+        do {
+            let users = try context.fetch(UserInfo.fetchRequest()) as! [UserInfo]
+            users.forEach {
+                print($0.usualCaffeineTime ?? Date())
+                print($0.usualCaffeineIntake)
+                print($0.goalCaffeineIntake)
+                print($0.notificationEnabled)
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }

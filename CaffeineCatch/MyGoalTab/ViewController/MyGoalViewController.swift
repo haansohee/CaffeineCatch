@@ -12,13 +12,13 @@ import RxDataSources
 
 final class MyGoalViewController: UIViewController {
     private let myGoalView = MyGoalView()
-    private let myPageViewModel: MyGoalViewModel
+    private let myGoalViewModel: MyGoalViewModel
     private let disposeBag = DisposeBag()
     
     init(myPageViewModel: MyGoalViewModel = MyGoalViewModel()) {
-        self.myPageViewModel = myPageViewModel
+        self.myGoalViewModel = myPageViewModel
         super.init(nibName: nil, bundle: nil)
-        self.myPageViewModel.loadSectionData()
+        self.myGoalViewModel.loadSectionData()
     }
     
     required init?(coder: NSCoder) {
@@ -70,7 +70,7 @@ extension MyGoalViewController {
     }
     
     private func bindAverageCaffeineCollectionViewSection() {
-        myPageViewModel.averageCaffeineSectionData
+        myGoalViewModel.averageCaffeineSectionData
             .bind(to: myGoalView.averageCaffeineCollectionView.rx.items(dataSource: createCollectionViewDataSource()))
             .disposed(by: disposeBag)
     }
