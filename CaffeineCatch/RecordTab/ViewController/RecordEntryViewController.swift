@@ -11,7 +11,19 @@ import RxSwift
 
 final class RecordEntryViewController: UIViewController {
     private let recordEntryView = RecordEntryView()
+    private let recordViewModel: RecordViewModel
     private let disposeBag = DisposeBag()
+    
+    init(recordViewModel: RecordViewModel = RecordViewModel(),
+         selectedDate: Date) {
+        self.recordViewModel = recordViewModel
+        self.recordViewModel.selectedDate = selectedDate
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,13 +70,14 @@ extension RecordEntryViewController {
             recordEntryView.mgButton
         ]
         
-        guard let index = buttons.firstIndex(of: selectedButton) else { return }  // return 될 시 에러 처리 하십시오 담곰씨 (나중에..)
-        buttons.remove(at: index)
+        guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return }  // return 될 시 에러 처리 하십시오 담곰씨 (나중에..)
+        buttons.remove(at: selectedIndex)
         
         selectedButton.backgroundColor = .systemBlue
         selectedButton.setTitleColor(.white, for: .normal)
+        selectedButton.isSelected = true
         buttons.forEach {
-            $0.tag = 0
+            $0.isSelected = false
             $0.backgroundColor = .systemGray6
             $0.setTitleColor(.label, for: .normal)
         }
@@ -104,6 +117,8 @@ extension RecordEntryViewController {
     private func bindAll() {
         bindIntakeButtons()
         bindSohtMgButton()
+        bindRecordSaveButton()
+        bindIsSavedCoreData()
     }
     
     private func bindIntakeButtons() {
@@ -192,8 +207,8 @@ extension RecordEntryViewController {
         recordEntryView.shotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                self?.recordEntryView.shotButton.tag = 1
-                self?.recordEntryView.mgButton.tag = 0
+                self?.recordEntryView.shotButton.isSelected = true
+                self?.recordEntryView.mgButton.isSelected = false
                 self?.recordEntryView.shotButton.backgroundColor = .systemBlue
                 self?.recordEntryView.mgButton.backgroundColor = .systemGray4
                 self?.recordEntryView.shotButton.setTitleColor(.white, for: .normal)
@@ -204,12 +219,96 @@ extension RecordEntryViewController {
         recordEntryView.mgButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                self?.recordEntryView.shotButton.tag = 0
-                self?.recordEntryView.mgButton.tag = 1
+                self?.recordEntryView.shotButton.isSelected = false
+                self?.recordEntryView.mgButton.isSelected = true
                 self?.recordEntryView.shotButton.backgroundColor = .systemGray4
                 self?.recordEntryView.mgButton.backgroundColor = .systemBlue
                 self?.recordEntryView.shotButton.setTitleColor(.label, for: .normal)
                 self?.recordEntryView.mgButton.setTitleColor(.white, for: .normal)
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindRecordSaveButton() {
+        recordEntryView.recordSaveButton.rx.tap
+            .subscribe(onNext: {[weak self] _ in
+                guard let view = self?.recordEntryView else { return }
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+                let intakeDate = self?.recordViewModel.selectedDate ?? Date()
+                let intakeDateString = dateFormatter.string(from: intakeDate)
+                
+                let selectedButton = [
+                    view.oneShotButton,
+                    view.twoShotButton,
+                    view.threeShotButton,
+                    view.fourShotButton,
+                    view.directInputButton,
+                    view.waterIntakeButton,
+                    view.nonCaffeineIntakeButton,
+                    view.milkIntakeButton,
+                    view.teaIntakeButton,
+                    view.anotherIntakeButton,
+                ].first { $0.isSelected }
+                
+                switch selectedButton {
+                case view.directInputButton:
+                    let unitButton = [view.shotButton, view.mgButton].first { $0.isSelected }
+                    guard let intakeValue = view.directInputTextField.text,
+                          !(intakeValue.isEmpty),
+                          intakeValue != "",
+                          let unitText = unitButton?.titleLabel?.text else { return } // 에러 처리 하십시옹 담곰씨
+                    let intake = "\(intakeValue) \(unitText)"
+                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: true)
+                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: true)
+                    
+                case view.waterIntakeButton,
+                    view.nonCaffeineIntakeButton,
+                    view.milkIntakeButton,
+                    view.teaIntakeButton,
+                    view.anotherIntakeButton:
+                    let selectedButton = [
+                        view.waterIntakeButton,
+                        view.nonCaffeineIntakeButton,
+                        view.milkIntakeButton,
+                        view.teaIntakeButton,
+                        view.anotherIntakeButton
+                    ].first { $0.isSelected }
+                    guard let intakeValue = view.intakeInputTextField.text,
+                          !(intakeValue.isEmpty),
+                          intakeValue != "",
+                          let intakeCategory = selectedButton?.titleLabel?.text else { return }  // 에러 처리 하십시옹 담곰씨
+                    let intake = "\(intakeCategory) \(intakeValue) mL"
+                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: false)
+                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: false)
+                    
+                case view.oneShotButton,
+                    view.twoShotButton,
+                    view.threeShotButton,
+                    view.fourShotButton:
+                    let selectedButton = [
+                        view.oneShotButton,
+                        view.twoShotButton,
+                        view.threeShotButton,
+                        view.fourShotButton
+                    ].first { $0.isSelected }
+                    guard let titleLabel = selectedButton?.titleLabel?.text else { return } // 에러 처리 하십시옹 담곰씨
+                    let intake = "\(titleLabel)"
+                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: true)
+                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: false)
+                    
+                default:
+                    return // 에러 처리 하십시옹 담곰씨
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindIsSavedCoreData() {
+        recordViewModel.isSavedIntakeRecord
+            .subscribe(onNext: {[weak self] isSavedCoreData in
+                guard isSavedCoreData else { return } // 에러 처리 하십시옹 담곰씨
+                print("저장이 됐어요^.^")
             })
             .disposed(by: disposeBag)
     }

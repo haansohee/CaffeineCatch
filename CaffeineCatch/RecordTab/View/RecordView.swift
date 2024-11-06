@@ -18,23 +18,23 @@ final class RecordView: UIView {
         return stackView
     }()
     
-    private let caffeineInTakeTitleLabel: UILabel = {
+    private let caffeineIntakeTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "☕️ 카페인 섭취량이에요"
+        label.text = "☕️ 카페인 총 섭취량이에요"
         label.textColor = .label
         label.textAlignment = .left
         label.font = .systemFont(ofSize: 16.0, weight: .bold)
         return label
     }()
     
-    private let caffeineInTakeLabel: UILabel = {
+    let caffeineIntakeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "2shot (150mg)"
+        label.text = "2 shot (150mg)"
         label.textColor = .label
-        label.textAlignment = .left
-        label.font = .systemFont(ofSize: 14.0, weight: .semibold)
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 18.0, weight: .light)
         return label
     }()
     
@@ -60,12 +60,13 @@ final class RecordView: UIView {
 
     let nonCaffenineInTakeCollecionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
         layout.scrollDirection = .horizontal
         layout.minimumLineSpacing = 8.0
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(NonCaffeineInTakeCollectionViewCell.self, forCellWithReuseIdentifier: NonCaffeineInTakeCollectionViewCell.reuseIdentifier)
+        collectionView.register(CaffeineIntakeCollectionViewCell.self, forCellWithReuseIdentifier: CaffeineIntakeCollectionViewCell.reuseIdentifier)
         collectionView.backgroundColor = .systemBackground
         return collectionView
     }()
@@ -89,7 +90,7 @@ extension RecordView {
     }
     
     private func addSubviews() {
-        [ caffeineInTakeTitleLabel, caffeineInTakeLabel ].forEach { caffeineStackView.addArrangedSubview($0) }
+        [ caffeineIntakeTitleLabel, caffeineIntakeLabel ].forEach { caffeineStackView.addArrangedSubview($0) }
         [ nonCaffeineInTakeTitleLabel, nonCaffenineInTakeCollecionView ].forEach { nonCaffeineStackView.addArrangedSubview($0) }
         [ caffeineStackView, nonCaffeineStackView ].forEach { addSubview($0) }
     }
@@ -101,6 +102,7 @@ extension RecordView {
             caffeineStackView.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor, constant: -24.0),
             caffeineStackView.heightAnchor.constraint(equalToConstant: 80.0),
             
+            caffeineIntakeLabel.centerXAnchor.constraint(equalTo: caffeineStackView.centerXAnchor),
             
             nonCaffeineStackView.topAnchor.constraint(equalTo: caffeineStackView.bottomAnchor, constant: 52.0),
             nonCaffeineStackView.leadingAnchor.constraint(equalTo: caffeineStackView.leadingAnchor),

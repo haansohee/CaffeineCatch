@@ -46,28 +46,28 @@ final class RecordEntryView: UIScrollView {
     
     let oneShotButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("1shot (75mg)", for: .normal)
+        button.setTitle("1 shot (75mg)", for: .normal)
         button.tag = 0
         return button
     }()
     
     let twoShotButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("2shot (150mg)", for: .normal)
+        button.setTitle("2 shot (150mg)", for: .normal)
         button.tag = 0
         return button
     }()
     
     let threeShotButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("3shot (225mg)", for: .normal)
+        button.setTitle("3 shot (225mg)", for: .normal)
         button.tag = 0
         return button
     }()
     
     let fourShotButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("4shot (300mg)", for: .normal)
+        button.setTitle("4 shot (300mg)", for: .normal)
         button.tag = 0
         return button
     }()

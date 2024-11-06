@@ -14,14 +14,14 @@ final class MyGoalViewModel {
     var averageCaffeine: [AverageCaffeineData] = []
     let averageCaffeineSectionData = BehaviorSubject(value: [
         SectionOfAverageCaffeineData(
-        header: "averageCaffeine",
+            header: SectionHeaderName.averageCaffeine.rawValue,
         items: [AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg")]
                 )])
     let isSavedCoreData = PublishSubject<Bool>()
     
     func loadSectionData() {
         let averageCaffeineData = [SectionOfAverageCaffeineData(
-            header: "averageCaffeine",
+            header: SectionHeaderName.averageCaffeine.rawValue,
             items: [
                 AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg"),
                 AverageCaffeineData(caffeineData: "캔커피\n(200ml, 1캔)", mgData: "118mg"),
@@ -35,18 +35,20 @@ final class MyGoalViewModel {
         averageCaffeineSectionData.onNext(averageCaffeineData)
     }
     
+    // 아래 메서드들은 나중에 필요할 것 같아서 냅뒀어요...
+    
     func saveCoreDataModelTest() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: "UserInfo", in: context)
+        let context = appDelegate.userPersistentContainer.viewContext
+        let entity = NSEntityDescription.entity(forEntityName: EntityName.UserInfo.rawValue, in: context)
         let userInfo = User(usualCaffeineTime: Date(), usualCaffeineIntake: 150, goalCaffeineIntake: 100, notificationEnabled: true)
         
         if let entity = entity {
             let newUserInfo = NSManagedObject(entity: entity, insertInto: context)
-            newUserInfo.setValue(userInfo.usualCaffeineTime, forKey: "usualCaffeineTime")
-            newUserInfo.setValue(userInfo.usualCaffeineIntake, forKey: "usualCaffeineIntake")
-            newUserInfo.setValue(userInfo.goalCaffeineIntake, forKey: "goalCaffeineIntake")
-            newUserInfo.setValue(userInfo.notificationEnabled, forKey: "notificationEnabled")
+            newUserInfo.setValue(userInfo.usualCaffeineTime, forKey: CoreDataAttributes.usualCaffeineTime.rawValue)
+            newUserInfo.setValue(userInfo.usualCaffeineIntake, forKey: CoreDataAttributes.usualCaffeineIntake.rawValue)
+            newUserInfo.setValue(userInfo.goalCaffeineIntake, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            newUserInfo.setValue(userInfo.notificationEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
             do {
                 try context.save()
                 isSavedCoreData.onNext(true)
@@ -59,7 +61,7 @@ final class MyGoalViewModel {
     
     func fetchCoreDataModelTest() {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
+        let context = appDelegate.userPersistentContainer.viewContext
         
         do {
             let users = try context.fetch(UserInfo.fetchRequest()) as! [UserInfo]
