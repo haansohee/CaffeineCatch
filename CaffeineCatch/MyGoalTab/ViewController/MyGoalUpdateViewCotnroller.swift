@@ -48,8 +48,8 @@ extension MyGoalUpdateViewCotnroller {
     }
     
     private func resetMyGoalUpdateViewButtonsProperties() {
-        myGoalUpdateView.shotButton.tag = 0
-        myGoalUpdateView.mgButton.tag = 0
+        myGoalUpdateView.shotButton.isSelected = false
+        myGoalUpdateView.mgButton.isSelected = false
         myGoalUpdateView.shotButton.backgroundColor = .lightGray
         myGoalUpdateView.mgButton.backgroundColor = .lightGray
         myGoalUpdateView.shotButton.setTitle("shot", for: .normal)
@@ -60,10 +60,10 @@ extension MyGoalUpdateViewCotnroller {
                                          disabledButton: AnimationButton,
                                          enabledButtonTitle: String,
                                          disabledButtonTitle: String) {
-        enabledButton.tag = 1
+        enabledButton.isSelected = true
         enabledButton.backgroundColor = .systemGray4
         enabledButton.setTitle(enabledButtonTitle, for: .normal)
-        disabledButton.tag = 0
+        disabledButton.isSelected = false
         disabledButton.backgroundColor = .systemBlue
         disabledButton.setTitle(disabledButtonTitle, for: .normal)
         myGoalUpdateView.updateButton.isEnabled = true
@@ -82,22 +82,23 @@ extension MyGoalUpdateViewCotnroller {
             .orEmpty
             .asDriver()
             .drive(onNext: {[weak self] intakeValue in
+                guard let view = self?.myGoalUpdateView else { return }
                 let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
-                self?.myGoalUpdateView.shotButton.isEnabled = isEnabled ? true : false
-                self?.myGoalUpdateView.mgButton.isEnabled = isEnabled ? true : false
+                view.shotButton.isEnabled = isEnabled ? true : false
+                view.mgButton.isEnabled = isEnabled ? true : false
                 
                 if isEnabled {
-                    self?.myGoalUpdateView.shotButton.backgroundColor = self?.myGoalUpdateView.shotButton.tag == 1 ? .systemGray4 : .systemBlue
-                    self?.myGoalUpdateView.mgButton.backgroundColor = self?.myGoalUpdateView.mgButton.tag == 1 ? .systemGray4 : .systemBlue
+                    view.shotButton.backgroundColor = view.shotButton.isSelected ? .systemGray4 : .systemBlue
+                    view.mgButton.backgroundColor = view.mgButton.isSelected ? .systemGray4 : .systemBlue
                 } else {
-                    self?.myGoalUpdateView.shotButton.backgroundColor = .lightGray
-                    self?.myGoalUpdateView.mgButton.backgroundColor = .lightGray
-                    self?.myGoalUpdateView.updateButton.backgroundColor = .lightGray
-                    self?.myGoalUpdateView.shotButton.tag = 0
-                    self?.myGoalUpdateView.mgButton.tag = 0
-                    self?.myGoalUpdateView.updateButton.isEnabled = false
-                    self?.myGoalUpdateView.shotButton.setTitle("shot", for: .normal)
-                    self?.myGoalUpdateView.mgButton.setTitle("mg", for: .normal)
+                    view.shotButton.backgroundColor = .lightGray
+                    view.mgButton.backgroundColor = .lightGray
+                    view.updateButton.backgroundColor = .lightGray
+                    view.shotButton.isSelected = false
+                    view.mgButton.isSelected = false
+                    view.updateButton.isEnabled = false
+                    view.shotButton.setTitle("shot", for: .normal)
+                    view.mgButton.setTitle("mg", for: .normal)
                 }
             })
             .disposed(by: disposeBag)

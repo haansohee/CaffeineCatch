@@ -1,5 +1,5 @@
 //
-//  NonCaffeineInTakeCollectionViewCell.swift
+//  CaffeineIntakeCollectionViewCell.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 10/22/24.
@@ -7,13 +7,14 @@
 
 import UIKit
 
-final class NonCaffeineInTakeCollectionViewCell: UICollectionViewCell, ReuseIdentifierProtocol {
+final class CaffeineIntakeCollectionViewCell: UICollectionViewCell, ReuseIdentifierProtocol {
     let label: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 14)
+        label.font = .systemFont(ofSize: 14, weight: .semibold)
         label.textColor = .label
         label.textAlignment = .center
+        label.text = "기록이 없어요."
         return label
     }()
     
@@ -29,11 +30,11 @@ final class NonCaffeineInTakeCollectionViewCell: UICollectionViewCell, ReuseIden
     }
 }
 
-extension NonCaffeineInTakeCollectionViewCell {
+extension CaffeineIntakeCollectionViewCell {
     private func configureNonCaffeineInTakeCollectionViewCell() {
         layer.borderColor = UIColor.separator.cgColor
         layer.borderWidth = 0.5
-        layer.cornerRadius = 12.0
+        layer.cornerRadius = 14.0
     }
     
     private func addSubviews() {

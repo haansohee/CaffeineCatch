@@ -30,7 +30,7 @@ final class RecordViewController: UIViewController {
     init(recordViewModel: RecordViewModel = RecordViewModel()) {
         self.recordViewModel = recordViewModel
         super.init(nibName: nil, bundle: nil)
-        self.recordViewModel.loadSectionData()
+        self.recordViewModel.fetchRecordCaffeineIntake(date: Date())
     }
     
     required init?(coder: NSCoder) {
@@ -43,6 +43,11 @@ final class RecordViewController: UIViewController {
         configureFSCalendar()
         setLayoutConstraints()
         bindAll()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        fetchCaffeineIntakeRecord()
     }
 }
 
@@ -61,6 +66,15 @@ extension RecordViewController {
         calenderView.delegate = self
         calenderView.dataSource = self
         calenderView.scope = .month
+    }
+    
+    //MARK: Fetch Caffeine Intake Record
+    private func fetchCaffeineIntakeRecord() {
+        guard let selectedDate = recordViewModel.selectedDate else {
+            recordViewModel.fetchRecordCaffeineIntake(date: Date())
+            return
+        }
+        recordViewModel.fetchRecordCaffeineIntake(date: selectedDate)
     }
     
     //MARK: Set Layout Constraint
@@ -85,17 +99,24 @@ extension RecordViewController {
     
     //MARK: Create CollectionView DataSource
     private func createCollecitonViewDataSource() -> RxCollectionViewSectionedReloadDataSource<SectionOfInTakeNonCaffeineData> {
-        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfInTakeNonCaffeineData>(configureCell: { dataSource, collectionView, indexPath, item in
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NonCaffeineInTakeCollectionViewCell.reuseIdentifier, for: indexPath) as? NonCaffeineInTakeCollectionViewCell else { return UICollectionViewCell() }
-            cell.label.text = item.nonCaffeine
-            return cell
-        })
+        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfInTakeNonCaffeineData>(
+            configureCell: { dataSource, collectionView, indexPath, item in
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CaffeineIntakeCollectionViewCell.reuseIdentifier, for: indexPath) as? CaffeineIntakeCollectionViewCell else {
+                    return UICollectionViewCell() }
+                guard !item.nonCaffeine.isEmpty,
+                      item.nonCaffeine != "" else {
+                    cell.label.text = "기록이 없어요."
+                    return cell}
+                cell.label.text = item.nonCaffeine
+                return cell
+            })
         return dataSource
     }
     
     //MARK: Bind
     private func bindAll() {
         bindNonCaffeineInTakeCollectionViewSection()
+        bindCaffeineIntakeData()
         bindRecordAddButton()
     }
     
@@ -106,20 +127,33 @@ extension RecordViewController {
             .disposed(by: disposeBag)
     }
     
+    private func bindCaffeineIntakeData() {
+        recordViewModel.caffeineIntakeData
+            .asDriver(onErrorJustReturn: "기록이 없어요.")
+            .drive(onNext: {[weak self] caffeineIntake in
+                guard !caffeineIntake.isEmpty,
+                      caffeineIntake != "" else {
+                    self?.recordView.caffeineIntakeLabel.text = "기록이 없어요."
+                    return }
+                self?.recordView.caffeineIntakeLabel.text = caffeineIntake
+            })
+            .disposed(by: disposeBag)
+    }
+    
     private func bindRecordAddButton() {
         recordAddButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                self?.navigationController?.pushViewController(RecordEntryViewController(), animated: true)
+                guard let selectedDate = self?.recordViewModel.selectedDate else {
+                    self?.navigationController?.pushViewController(RecordEntryViewController(selectedDate: Date()), animated: true)
+                    return }
+                self?.navigationController?.pushViewController(RecordEntryViewController(selectedDate: selectedDate), animated: true)
             })
             .disposed(by: disposeBag)
     }
 }
 
 extension RecordViewController: FSCalendarDelegate {
-    func calendarView(_ calendarView: CalendarView, didSelect date: Date) {
-        print(date)
-    }
 }
 
 extension RecordViewController: FSCalendarDataSource {
@@ -127,12 +161,17 @@ extension RecordViewController: FSCalendarDataSource {
         guard Calendar.current.isDate(date, inSameDayAs: Date()) else { return nil }
         return "오늘"
     }
+
+    func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
+        recordViewModel.selectedDate = date
+        recordViewModel.fetchRecordCaffeineIntake(date: date)
+        print(date)
+    }
 }
 
 // MARK: CollectionView Delegate
 extension RecordViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        return CGSize(width: (collectionView.bounds.size.width / 2.0) - 20.0, height: collectionView.bounds.size.height - 5.0)
+        return CGSize(width: (collectionView.bounds.size.width / 2.0) - 20.0, height: (collectionView.bounds.size.height) - 20.0)
     }
 }
