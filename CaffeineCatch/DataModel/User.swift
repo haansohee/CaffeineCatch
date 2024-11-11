@@ -8,8 +8,8 @@
 import Foundation
 
 struct User {
-    var usualCaffeineTime: Date
-    var usualCaffeineIntake: Int
-    var goalCaffeineIntake: Int
+    var usualCaffeineTime: String
+    var usualCaffeineIntake: String
+    var goalCaffeineIntake: String
     var notificationEnabled: Bool
 }

@@ -10,7 +10,12 @@ import RxSwift
 import UIKit
 import CoreData
 
+enum MyError: Error {
+    case noData
+}
+
 final class MyGoalViewModel {
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var averageCaffeine: [AverageCaffeineData] = []
     let averageCaffeineSectionData = BehaviorSubject(value: [
         SectionOfAverageCaffeineData(
@@ -18,6 +23,9 @@ final class MyGoalViewModel {
         items: [AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg")]
                 )])
     let isSavedCoreData = PublishSubject<Bool>()
+    let isUpdatedGoalCaffeineIntake = PublishSubject<Bool>()
+    let myGoalCaffeineIntakeSubject = BehaviorSubject(value: "0")
+//    private var intakeUnitName: IntakeUnitName?
     
     func loadSectionData() {
         let averageCaffeineData = [SectionOfAverageCaffeineData(
@@ -35,44 +43,70 @@ final class MyGoalViewModel {
         averageCaffeineSectionData.onNext(averageCaffeineData)
     }
     
-    // 아래 메서드들은 나중에 필요할 것 같아서 냅뒀어요...
-    
-    func saveCoreDataModelTest() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+    func fetchMyGoalCaffeineIntake() {
         let context = appDelegate.userPersistentContainer.viewContext
-        let entity = NSEntityDescription.entity(forEntityName: EntityName.UserInfo.rawValue, in: context)
-        let userInfo = User(usualCaffeineTime: Date(), usualCaffeineIntake: 150, goalCaffeineIntake: 100, notificationEnabled: true)
-        
-        if let entity = entity {
-            let newUserInfo = NSManagedObject(entity: entity, insertInto: context)
-            newUserInfo.setValue(userInfo.usualCaffeineTime, forKey: CoreDataAttributes.usualCaffeineTime.rawValue)
-            newUserInfo.setValue(userInfo.usualCaffeineIntake, forKey: CoreDataAttributes.usualCaffeineIntake.rawValue)
-            newUserInfo.setValue(userInfo.goalCaffeineIntake, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
-            newUserInfo.setValue(userInfo.notificationEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
-            do {
-                try context.save()
-                isSavedCoreData.onNext(true)
-            } catch {
-                isSavedCoreData.onNext(false)
-                print(error.localizedDescription)
-            }
-        }
-    }
-    
-    func fetchCoreDataModelTest() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.userPersistentContainer.viewContext
-        
+        let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
         do {
-            let users = try context.fetch(UserInfo.fetchRequest()) as! [UserInfo]
-            users.forEach {
-                print($0.usualCaffeineTime ?? Date())
-                print($0.usualCaffeineIntake)
-                print($0.goalCaffeineIntake)
-                print($0.notificationEnabled)
-            }
+            let userInfos = try context.fetch(fetchUserReqeust)
+            guard let userInfo = userInfos.first,
+                  let goalCaffeineIntake = userInfo.goalCaffeineIntake else {
+                myGoalCaffeineIntakeSubject.onError(MyError.noData)
+                return }
+            myGoalCaffeineIntakeSubject.onNext(goalCaffeineIntake)
         } catch {
-            print(error.localizedDescription)
+            print("!! Fetch MyGoal Caffeine Intake Error: \(error.localizedDescription)")
+            myGoalCaffeineIntakeSubject.onError(error)
         }
     }
+    
+    private func convertMgToShot(_ inputValue: String) -> String? {
+        let inputData = inputValue.split(separator: " ").map(String.init)
+        guard let unit = inputData.last else { return nil }
+        guard let value = inputData.first,
+              let valueInt = Int(value) else { return nil }
+        switch IntakeUnitName(rawValue: unit) {
+        case .mg:
+            let shot = valueInt / 75
+            return "\(shot) shot (\(valueInt)mg)"
+        case .shot:
+            let mg = valueInt * 75
+            return "\(valueInt) shot (\(mg)mg)"
+            default:
+            return nil
+        }
+    }
+    
+    func updateGoalCaffeineIntake(_ updateData: String) {
+        let context = appDelegate.userPersistentContainer.viewContext
+        let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
+        let insertIntakeValue = convertMgToShot(updateData)
+        do {
+            let userInfos = try context.fetch(fetchUserReqeust)
+            guard let userInfo = userInfos.first else {
+                isUpdatedGoalCaffeineIntake.onNext(false)
+                return }
+            let userInfoManagedObject = userInfo as NSManagedObject
+            userInfoManagedObject.setValue(insertIntakeValue, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            try context.save()
+            NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+            isUpdatedGoalCaffeineIntake.onNext(true)
+        } catch {
+            print("!! Update Goal Caffeine Intake ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+    }
+    
+//    func deleteAllData() { 나중에 쓸 녀석이라 안 지웠어요..
+//        let context = appDelegate.userPersistentContainer.viewContext
+//        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: EntityName.UserInfo.rawValue)
+//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+//        
+//        do {
+//            try context.execute(deleteRequest)
+//            try context.save()
+//            print("모든 데이터 삭제 완료~~")
+//        } catch {
+//            print("데이터 삭제 실패: \(error)")
+//        }
+//    }
 }

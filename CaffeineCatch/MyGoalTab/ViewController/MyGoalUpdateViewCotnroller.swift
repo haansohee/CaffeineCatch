@@ -11,6 +11,7 @@ import RxSwift
 
 final class MyGoalUpdateViewCotnroller: UIViewController {
     private let myGoalUpdateView = MyGoalUpdateView()
+    private let myGoalViewModel = MyGoalViewModel()
     private let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
@@ -75,6 +76,8 @@ extension MyGoalUpdateViewCotnroller {
     private func bindAll() {
         bindValueInputTextField()
         bindSohtMgButton()
+        bindUpdateButton()
+        bindIsUpdatedGoalCaffeineIntake()
     }
     
     private func bindValueInputTextField() {
@@ -124,6 +127,29 @@ extension MyGoalUpdateViewCotnroller {
                                               disabledButton: view.shotButton,
                                               enabledButtonTitle: "mg ✔️",
                                               disabledButtonTitle: "shot")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindUpdateButton() {
+        myGoalUpdateView.updateButton.rx.tap
+            .subscribe(onNext: {[weak self] _ in
+                guard let view = self?.myGoalUpdateView else { return }
+                guard let intakeValue = view.valueInputTextField.text,
+                      !intakeValue.isEmpty,
+                      intakeValue != "" else { return }
+                guard view.mgButton.isSelected || view.shotButton.isSelected else { return }  // 에러 처리 하십시옹 담곰씨
+                let unitValue = view.mgButton.isSelected ? "mg" : "shot"
+                self?.myGoalUpdateViewModel.updateGoalCaffeineIntake("\(intakeValue) \(unitValue)")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindIsUpdatedGoalCaffeineIntake() {
+        myGoalUpdateViewModel.isUpdatedGoalCaffeineIntake
+            .asDriver(onErrorJustReturn: false)
+            .drive(onNext: {[weak self] isUpdatedGoalCaffeineIntake in
+                guard isUpdatedGoalCaffeineIntake else { return }  // 에러 처리, 성공 처리 하십시옹 담곰씨
             })
             .disposed(by: disposeBag)
     }
