@@ -19,6 +19,7 @@ final class MyGoalViewController: UIViewController {
         self.myGoalViewModel = myPageViewModel
         super.init(nibName: nil, bundle: nil)
         self.myGoalViewModel.loadSectionData()
+        self.myGoalViewModel.fetchMyGoalCaffeineIntake()
     }
     
     required init?(coder: NSCoder) {
@@ -29,6 +30,7 @@ final class MyGoalViewController: UIViewController {
         super.viewDidLoad()
         configureMyPageViewController()
         setLayoutConstraints()
+        addNotificationUpdateMyGoalCaffeineIntake()
         bindAll()
     }
 }
@@ -63,15 +65,36 @@ extension MyGoalViewController {
         return dataSource
     }
     
+    // MARK: NotificationCenter
+    private func addNotificationUpdateMyGoalCaffeineIntake() {
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMyGoalCaffeineIntake), name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+    }
+    
+    @objc private func updateMyGoalCaffeineIntake() {
+        myGoalViewModel.fetchMyGoalCaffeineIntake()
+    }
+    
     //MARK: Bind
     private func bindAll() {
         bindAverageCaffeineCollectionViewSection()
+        bindMyGoalCaffeineIntakeSubject()
         bindGoalUpdateButton()
     }
     
     private func bindAverageCaffeineCollectionViewSection() {
         myGoalViewModel.averageCaffeineSectionData
             .bind(to: myGoalView.averageCaffeineCollectionView.rx.items(dataSource: createCollectionViewDataSource()))
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindMyGoalCaffeineIntakeSubject() {
+        myGoalViewModel.myGoalCaffeineIntakeSubject
+            .asDriver(onErrorJustReturn: "0")
+            .drive(onNext: {[ weak self] myGoalCaffeineIntake in
+                guard !myGoalCaffeineIntake.isEmpty,
+                      myGoalCaffeineIntake.first != "0" else { return }  // 에러 처리 하십시옹 담곰씨
+                self?.myGoalView.goalSettingLabel.text = "나의 하루 카페인 섭취량 목표는\n\n\(myGoalCaffeineIntake) 이하예요. ✊🏻"
+            })
             .disposed(by: disposeBag)
     }
     

@@ -70,15 +70,15 @@ final class RecordViewModel {
 //    }
     
     private func convertMgToShot(_ inputValue: String) -> String? {
-        let inputData = inputValue.split(separator: " ")
-        let unit = inputData.last
+        let inputData = inputValue.split(separator: " ").map(String.init)
+        guard let unit = inputData.last else { return nil }
         guard let value = inputData.first,
               let valueInt = Int(value) else { return nil }
-        switch unit {
-            case "mg":
+        switch IntakeUnitName(rawValue: unit) {
+        case .mg:
             let shot = valueInt / 75
             return "\(shot) shot (\(valueInt)mg)"
-            case "shot":
+        case .shot:
             let mg = valueInt * 75
             return "\(valueInt) shot (\(mg)mg)"
             default:
