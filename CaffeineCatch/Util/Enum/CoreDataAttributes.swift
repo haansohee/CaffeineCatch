@@ -8,10 +8,10 @@
 import Foundation
 
 enum CoreDataAttributes: String {
-    case usualCaffeineTime
     case usualCaffeineIntake
     case goalCaffeineIntake
     case notificationEnabled
+    case notificationTime
     case caffeineIntakeDate
     case intake
     case isCaffeine

@@ -93,7 +93,7 @@ extension MyGoalViewController {
             .drive(onNext: {[ weak self] myGoalCaffeineIntake in
                 guard !myGoalCaffeineIntake.isEmpty,
                       myGoalCaffeineIntake.first != "0" else { return }  // 에러 처리 하십시옹 담곰씨
-                self?.myGoalView.goalSettingLabel.text = "나의 하루 카페인 섭취량 목표는\n\n\(myGoalCaffeineIntake) 이하예요. ✊🏻"
+                self?.myGoalView.goalSettingLabel.text = "나의 하루 카페인 섭취량 목표는\n\n\(myGoalCaffeineIntake)예요. ✊🏻"
             })
             .disposed(by: disposeBag)
     }

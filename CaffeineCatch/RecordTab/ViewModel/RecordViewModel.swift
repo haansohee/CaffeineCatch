@@ -69,31 +69,13 @@ final class RecordViewModel {
 //        }
 //    }
     
-    private func convertMgToShot(_ inputValue: String) -> String? {
-        let inputData = inputValue.split(separator: " ").map(String.init)
-        guard let unit = inputData.last else { return nil }
-        guard let value = inputData.first,
-              let valueInt = Int(value) else { return nil }
-        switch IntakeUnitName(rawValue: unit) {
-        case .mg:
-            let shot = valueInt / 75
-            return "\(shot) shot (\(valueInt)mg)"
-        case .shot:
-            let mg = valueInt * 75
-            return "\(valueInt) shot (\(mg)mg)"
-            default:
-            return nil
-        }
-    }
-
-    
     func saveRecordCaffeineIntake(_ caffeineIntake: CaffeineIntake, isDirectInput: Bool) {
         let context = appDelegate.caffeinePersistentContainer.viewContext
         let entity = NSEntityDescription.entity(forEntityName: EntityName.CaffeineIntakeInfo.rawValue, in: context)
         guard let entity else { return }
         let newCaffieneIntakeInfo = NSManagedObject(entity: entity, insertInto: context)
         
-        let inputCaffeineIntakeData = isDirectInput ? convertMgToShot(caffeineIntake.intake) : caffeineIntake.intake
+        let inputCaffeineIntakeData = isDirectInput ? (caffeineIntake.intake).convertMgToShot() : caffeineIntake.intake
         guard let inputCaffeineIntake = inputCaffeineIntakeData else {
             isSavedIntakeRecord.onNext(false)
             return }

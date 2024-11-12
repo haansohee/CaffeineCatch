@@ -25,7 +25,6 @@ final class MyGoalViewModel {
     let isSavedCoreData = PublishSubject<Bool>()
     let isUpdatedGoalCaffeineIntake = PublishSubject<Bool>()
     let myGoalCaffeineIntakeSubject = BehaviorSubject(value: "0")
-//    private var intakeUnitName: IntakeUnitName?
     
     func loadSectionData() {
         let averageCaffeineData = [SectionOfAverageCaffeineData(
@@ -59,34 +58,19 @@ final class MyGoalViewModel {
         }
     }
     
-    private func convertMgToShot(_ inputValue: String) -> String? {
-        let inputData = inputValue.split(separator: " ").map(String.init)
-        guard let unit = inputData.last else { return nil }
-        guard let value = inputData.first,
-              let valueInt = Int(value) else { return nil }
-        switch IntakeUnitName(rawValue: unit) {
-        case .mg:
-            let shot = valueInt / 75
-            return "\(shot) shot (\(valueInt)mg)"
-        case .shot:
-            let mg = valueInt * 75
-            return "\(valueInt) shot (\(mg)mg)"
-            default:
-            return nil
-        }
-    }
-    
     func updateGoalCaffeineIntake(_ updateData: String) {
         let context = appDelegate.userPersistentContainer.viewContext
         let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
-        let insertIntakeValue = convertMgToShot(updateData)
+        guard let insertIntakeValue = updateData.convertMgToShot() else {
+            isUpdatedGoalCaffeineIntake.onNext(false)
+            return }
         do {
             let userInfos = try context.fetch(fetchUserReqeust)
             guard let userInfo = userInfos.first else {
                 isUpdatedGoalCaffeineIntake.onNext(false)
                 return }
             let userInfoManagedObject = userInfo as NSManagedObject
-            userInfoManagedObject.setValue(insertIntakeValue, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue("\(insertIntakeValue) 이하", forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
             try context.save()
             NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
             isUpdatedGoalCaffeineIntake.onNext(true)

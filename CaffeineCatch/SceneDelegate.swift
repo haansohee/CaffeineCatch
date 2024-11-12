@@ -16,7 +16,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = UIWindow(windowScene: windowScene)
         self.window?.backgroundColor = .systemBackground
         self.window?.makeKeyAndVisible()
-        self.window?.rootViewController = MainTabBarController()
+        let firstRunRootViewController = UINavigationController(rootViewController: FirstRunUsualCaffeineIntakeViewController())
+        let isFirstRun = UserDefaults.standard.bool(forKey: UserDefaultsForKeyName.firstRun.rawValue)
+        self.window?.rootViewController = !isFirstRun ? firstRunRootViewController : MainTabBarController()
     }
 }
 
+extension SceneDelegate {
+    func changeRootViewController(_ rootViewController: UIViewController, animated: Bool) {
+        self.window?.rootViewController = rootViewController
+        UIView.transition(with: self.window!, duration: 0.2, options: [.transitionCrossDissolve], animations: nil)
+    }
+}

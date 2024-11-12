@@ -3,7 +3,7 @@
     <entity name="UserInfo" representedClassName="UserInfo" syncable="YES" codeGenerationType="class">
         <attribute name="goalCaffeineIntake" optional="YES" attributeType="String"/>
         <attribute name="notificationEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="notificationTime" optional="YES" attributeType="String"/>
         <attribute name="usualCaffeineIntake" optional="YES" attributeType="String"/>
-        <attribute name="usualCaffeineTime" optional="YES" attributeType="String"/>
     </entity>
 </model>
