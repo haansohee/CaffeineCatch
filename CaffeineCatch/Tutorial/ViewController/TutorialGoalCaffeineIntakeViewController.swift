@@ -1,5 +1,5 @@
 //
-//  FirstRunGoalCaffeineIntakeViewController.swift
+//  TutorialGoalCaffeineIntakeViewController.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -9,16 +9,16 @@ import Foundation
 import UIKit
 import RxSwift
 
-final class FirstRunGoalCaffeineIntakeViewController: UIViewController {
-    private let firstRunGoalCaffeineIntakeView = FirstRunGoalCaffeineIntakeView()
-    private let firstRunViewModel: FirstRunViewModel
+final class TutorialGoalCaffeineIntakeViewController: UIViewController {
+    private let tutorialGoalCaffeineIntakeView = TutorialGoalCaffeineIntakeView()
+    private let tutorialViewModel: TutorialViewModel
     private let nextButton = NextButton()
     private let disposeBag = DisposeBag()
     
-    init(firstRunViewModel: FirstRunViewModel = FirstRunViewModel()) {
-        self.firstRunViewModel = firstRunViewModel
+    init(viewModel: TutorialViewModel = TutorialViewModel()) {
+        self.tutorialViewModel = viewModel
         super.init(nibName: nil, bundle: nil)
-        self.firstRunViewModel.recommandGoalCaffeineIntake()
+        self.tutorialViewModel.recommandGoalCaffeineIntake()
     }
     
     required init?(coder: NSCoder) {
@@ -33,16 +33,15 @@ final class FirstRunGoalCaffeineIntakeViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        print("goal view will appear")
-        firstRunViewModel.recommandGoalCaffeineIntake()
+        tutorialViewModel.recommandGoalCaffeineIntake()
     }
 }
 
-extension FirstRunGoalCaffeineIntakeViewController {
+extension TutorialGoalCaffeineIntakeViewController {
     // MARK: Configure
     private func configureFirstRunUsualCaffeineIntakeView() {
-        firstRunGoalCaffeineIntakeView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(firstRunGoalCaffeineIntakeView)
+        tutorialGoalCaffeineIntakeView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tutorialGoalCaffeineIntakeView)
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: nextButton)
     }
@@ -50,17 +49,17 @@ extension FirstRunGoalCaffeineIntakeViewController {
     // MARK: Set Layout Constraint
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
-            firstRunGoalCaffeineIntakeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            firstRunGoalCaffeineIntakeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            firstRunGoalCaffeineIntakeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            firstRunGoalCaffeineIntakeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            tutorialGoalCaffeineIntakeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tutorialGoalCaffeineIntakeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tutorialGoalCaffeineIntakeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tutorialGoalCaffeineIntakeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
     private func changeUnitButtonsProperty(selectedButton: IntakeButton) {
         var buttons = [
-            firstRunGoalCaffeineIntakeView.shotButton,
-            firstRunGoalCaffeineIntakeView.mgButton
+            tutorialGoalCaffeineIntakeView.shotButton,
+            tutorialGoalCaffeineIntakeView.mgButton
         ]
         guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return  }
         buttons.remove(at: selectedIndex)
@@ -74,8 +73,8 @@ extension FirstRunGoalCaffeineIntakeViewController {
     
     private func changeButtonsProperty(selectedButton: AnimationButton) {
         var buttons = [
-            firstRunGoalCaffeineIntakeView.recommandButton,
-            firstRunGoalCaffeineIntakeView.directInputButton
+            tutorialGoalCaffeineIntakeView.recommandButton,
+            tutorialGoalCaffeineIntakeView.directInputButton
         ]
         guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return  }
         buttons.remove(at: selectedIndex)
@@ -85,14 +84,14 @@ extension FirstRunGoalCaffeineIntakeViewController {
         buttons[0].backgroundColor = .systemGray6
         buttons[0].setTitleColor(.label, for: .normal)
         buttons[0].isSelected = false
-        let isSelected = firstRunGoalCaffeineIntakeView.directInputButton.isSelected
-        firstRunGoalCaffeineIntakeView.directInputTextField.isEnabled = isSelected ? true : false
-        firstRunGoalCaffeineIntakeView.shotButton.isEnabled = isSelected ? true : false
-        firstRunGoalCaffeineIntakeView.mgButton.isEnabled = isSelected ? true : false
-        firstRunGoalCaffeineIntakeView.shotButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
-        firstRunGoalCaffeineIntakeView.shotButton.setTitleColor(isSelected ? .label : .white, for: .normal)
-        firstRunGoalCaffeineIntakeView.mgButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
-        firstRunGoalCaffeineIntakeView.mgButton.setTitleColor(isSelected ? .label : .white, for: .normal)
+        let isSelected = tutorialGoalCaffeineIntakeView.directInputButton.isSelected
+        tutorialGoalCaffeineIntakeView.directInputTextField.isEnabled = isSelected ? true : false
+        tutorialGoalCaffeineIntakeView.shotButton.isEnabled = isSelected ? true : false
+        tutorialGoalCaffeineIntakeView.mgButton.isEnabled = isSelected ? true : false
+        tutorialGoalCaffeineIntakeView.shotButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
+        tutorialGoalCaffeineIntakeView.shotButton.setTitleColor(isSelected ? .label : .white, for: .normal)
+        tutorialGoalCaffeineIntakeView.mgButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
+        tutorialGoalCaffeineIntakeView.mgButton.setTitleColor(isSelected ? .label : .white, for: .normal)
         nextButton.isHidden = false
     }
     
@@ -107,10 +106,10 @@ extension FirstRunGoalCaffeineIntakeViewController {
     }
     
     private func bindRecommandButton() {
-        firstRunGoalCaffeineIntakeView.recommandButton.rx.tap
+        tutorialGoalCaffeineIntakeView.recommandButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunGoalCaffeineIntakeView else { return }
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 self?.changeButtonsProperty(selectedButton: view.recommandButton)
                 view.directInputTextField.text = ""
             })
@@ -118,28 +117,28 @@ extension FirstRunGoalCaffeineIntakeViewController {
     }
     
     private func bindDirectInputButton() {
-        firstRunGoalCaffeineIntakeView.directInputButton.rx.tap
+        tutorialGoalCaffeineIntakeView.directInputButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunGoalCaffeineIntakeView else { return }
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 self?.changeButtonsProperty(selectedButton: view.directInputButton)
             })
             .disposed(by: disposeBag)
     }
     
     private func bindShotMgButton() {
-        firstRunGoalCaffeineIntakeView.shotButton.rx.tap
+        tutorialGoalCaffeineIntakeView.shotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunGoalCaffeineIntakeView else { return }
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 self?.changeUnitButtonsProperty(selectedButton: view.shotButton)
             })
             .disposed(by: disposeBag)
         
-        firstRunGoalCaffeineIntakeView.mgButton.rx.tap
+        tutorialGoalCaffeineIntakeView.mgButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunGoalCaffeineIntakeView else { return }
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 self?.changeUnitButtonsProperty(selectedButton: view.mgButton)
             })
             .disposed(by: disposeBag)
@@ -149,7 +148,7 @@ extension FirstRunGoalCaffeineIntakeViewController {
         nextButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunGoalCaffeineIntakeView else { return }
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 let buttons = [
                     view.recommandButton,
                     view.directInputButton
@@ -158,7 +157,7 @@ extension FirstRunGoalCaffeineIntakeViewController {
                 
                 switch selectedButton {
                 case view.recommandButton:
-                    self?.firstRunViewModel.saveGoalCaffeineIntake()
+                    self?.tutorialViewModel.saveGoalCaffeineIntake()
                     return
                     
                 case view.directInputButton:
@@ -171,7 +170,7 @@ extension FirstRunGoalCaffeineIntakeViewController {
                           let intakeValue = view.directInputTextField.text,
                           !intakeValue.isEmpty,
                           intakeValue != "" else { return }  // 선택, 입력해야해욧!!!!!!!!!!!!!!!!!!
-                    self?.firstRunViewModel.saveGoalCaffeineIntake("\(intakeValue) \(unitValue)")
+                    self?.tutorialViewModel.saveGoalCaffeineIntake("\(intakeValue) \(unitValue)")
                     return
                     
                 default: return // 에러 처리
@@ -181,24 +180,24 @@ extension FirstRunGoalCaffeineIntakeViewController {
     }
     
     private func bindCaffeineIntakeSubject() {
-        firstRunViewModel.caffeineIntakeSubject
+        tutorialViewModel.caffeineIntakeSubject
             .asDriver(onErrorJustReturn: "0")
             .drive(onNext: {[weak self] caffeineIntakeSubject in
                 guard caffeineIntakeSubject != "0" else { return }
-                self?.firstRunGoalCaffeineIntakeView.recommandLabel.text = "회원님의 카페인 섭취량을 기반으로 \n 회원님의 목표 섭취량을\n\(caffeineIntakeSubject)로 추천해요."
+                self?.tutorialGoalCaffeineIntakeView.recommandLabel.text = "회원님의 카페인 섭취량을 기반으로 \n 회원님의 목표 섭취량을\n\(caffeineIntakeSubject)로 추천해요."
             })
             .disposed(by: disposeBag)
     }
     
     private func bindIsSavedSuccess() {
-        firstRunViewModel.isSavedSuccess
+        tutorialViewModel.isSavedSuccess
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isSavedSuccess in
                 guard isSavedSuccess else {
                     print("저장실패..")
                     return }
                 print("저장성공^^..")
-                self?.navigationController?.pushViewController(FirstRunUsualCaffeineTimeViewController(), animated: true)
+                self?.navigationController?.pushViewController(TutorialUsualCaffeineTimeViewController(), animated: true)
             })
             .disposed(by: disposeBag)
     }

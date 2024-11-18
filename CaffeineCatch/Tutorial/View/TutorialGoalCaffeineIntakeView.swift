@@ -1,5 +1,5 @@
 //
-//  FirstRunGoalCaffeineIntakeView.swift
+//  TutorialGoalCaffeineIntakeView.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class FirstRunGoalCaffeineIntakeView: UIView {
+final class TutorialGoalCaffeineIntakeView: UIView {
     let recommandLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +82,7 @@ final class FirstRunGoalCaffeineIntakeView: UIView {
     }
 }
 
-extension FirstRunGoalCaffeineIntakeView {
+extension TutorialGoalCaffeineIntakeView {
     private func addSubviews() {
         [
             recommandLabel,

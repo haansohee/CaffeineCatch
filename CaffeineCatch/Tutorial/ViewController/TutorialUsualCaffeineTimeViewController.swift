@@ -1,5 +1,5 @@
 //
-//  FirstRunUsualCaffeineTimeViewController.swift
+//  TutorialUsualCaffeineTimeViewController.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -9,14 +9,14 @@ import Foundation
 import UIKit
 import RxSwift
 
-final class FirstRunUsualCaffeineTimeViewController: UIViewController {
-    private let firstRunUsualCaffeineTimeView = FirstRunUsualCaffeineTimeView()
-    private let firstRunViewModel: FirstRunViewModel
+final class TutorialUsualCaffeineTimeViewController: UIViewController {
+    private let tutorialUsualCaffeineTimeView = TutorialUsualCaffeineTimeView()
+    private let tutorialViewModel: TutorialViewModel
     private let nextButton = NextButton()
     private let disposeBag = DisposeBag()
     
-    init(firstRunViewModel: FirstRunViewModel = FirstRunViewModel()) {
-        self.firstRunViewModel = firstRunViewModel
+    init(viewModel: TutorialViewModel = TutorialViewModel()) {
+        self.tutorialViewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -32,11 +32,11 @@ final class FirstRunUsualCaffeineTimeViewController: UIViewController {
     }
 }
 
-extension FirstRunUsualCaffeineTimeViewController {
+extension TutorialUsualCaffeineTimeViewController {
     // MARK: Configure
     private func configureFirstRunUsualCaffeineIntakeView() {
-        firstRunUsualCaffeineTimeView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(firstRunUsualCaffeineTimeView)
+        tutorialUsualCaffeineTimeView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tutorialUsualCaffeineTimeView)
         view.backgroundColor = .systemBackground
         nextButton.setTitle("완료", for: .normal)
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: nextButton)
@@ -45,17 +45,17 @@ extension FirstRunUsualCaffeineTimeViewController {
     // MARK: Set Layout Constraint
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
-            firstRunUsualCaffeineTimeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            firstRunUsualCaffeineTimeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            firstRunUsualCaffeineTimeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            firstRunUsualCaffeineTimeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            tutorialUsualCaffeineTimeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tutorialUsualCaffeineTimeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tutorialUsualCaffeineTimeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tutorialUsualCaffeineTimeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
     private func changeNotificationButtonsProperty(selectedButton: AnimationButton) {
         var buttons = [
-            firstRunUsualCaffeineTimeView.notificationEnabledButton,
-            firstRunUsualCaffeineTimeView.notificationDisenabledButton
+            tutorialUsualCaffeineTimeView.notificationEnabledButton,
+            tutorialUsualCaffeineTimeView.notificationDisenabledButton
         ]
         guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return }
         buttons.remove(at: selectedIndex)
@@ -76,18 +76,18 @@ extension FirstRunUsualCaffeineTimeViewController {
     }
     
     private func bindNotificationButtons() {
-        firstRunUsualCaffeineTimeView.notificationEnabledButton.rx.tap
+        tutorialUsualCaffeineTimeView.notificationEnabledButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineTimeView else { return }
+                guard let view = self?.tutorialUsualCaffeineTimeView else { return }
                 self?.changeNotificationButtonsProperty(selectedButton: view.notificationEnabledButton)
             })
             .disposed(by: disposeBag)
         
-        firstRunUsualCaffeineTimeView.notificationDisenabledButton.rx.tap
+        tutorialUsualCaffeineTimeView.notificationDisenabledButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineTimeView else { return }
+                guard let view = self?.tutorialUsualCaffeineTimeView else { return }
                 self?.changeNotificationButtonsProperty(selectedButton: view.notificationDisenabledButton)
             })
             .disposed(by: disposeBag)
@@ -96,7 +96,7 @@ extension FirstRunUsualCaffeineTimeViewController {
     private func bindNextButton() {
         nextButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineTimeView else { return }
+                guard let view = self?.tutorialUsualCaffeineTimeView else { return }
                 let buttons = [
                     view.notificationEnabledButton,
                     view.notificationDisenabledButton
@@ -104,13 +104,11 @@ extension FirstRunUsualCaffeineTimeViewController {
                 guard let selectedButton = buttons.first else { return }
                 switch selectedButton {
                 case view.notificationEnabledButton:
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "HH:mm"
-                    let time = dateFormatter.string(from: view.datePicker.date)
-                    self?.firstRunViewModel.saveNotificationState(isEnabled: true, time: time)
+                    let time = view.datePicker.date.toTimeString()
+                    self?.tutorialViewModel.saveNotificationState(isEnabled: true, time: time)
                     return
                 case view.notificationDisenabledButton:
-                    self?.firstRunViewModel.saveNotificationState(isEnabled: false)
+                    self?.tutorialViewModel.saveNotificationState(isEnabled: false)
                     return
                 default: return
                 }
@@ -119,7 +117,7 @@ extension FirstRunUsualCaffeineTimeViewController {
     }
     
     private func bindIsSavedSuccess() {
-        firstRunViewModel.isSavedSuccess
+        tutorialViewModel.isSavedSuccess
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {isSavedSuccess in
                 guard isSavedSuccess else {

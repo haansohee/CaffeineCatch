@@ -16,9 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = UIWindow(windowScene: windowScene)
         self.window?.backgroundColor = .systemBackground
         self.window?.makeKeyAndVisible()
-        let firstRunRootViewController = UINavigationController(rootViewController: FirstRunUsualCaffeineIntakeViewController())
-        let isFirstRun = UserDefaults.standard.bool(forKey: UserDefaultsForKeyName.firstRun.rawValue)
-        self.window?.rootViewController = !isFirstRun ? firstRunRootViewController : MainTabBarController()
+        self.window?.rootViewController = SplashViewController()
     }
 }
 

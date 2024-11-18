@@ -15,4 +15,5 @@ enum CoreDataAttributes: String {
     case caffeineIntakeDate
     case intake
     case isCaffeine
+    case isGoalIntakeExceeded
 }

@@ -1,5 +1,5 @@
 //
-//  FirstRunViewModel.swift
+//  TutorialViewModel.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -10,11 +10,7 @@ import UIKit
 import RxSwift
 import CoreData
 
-enum UserDefaultsForKeyName: String {
-    case firstRun
-}
-
-final class FirstRunViewModel {
+final class TutorialViewModel {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let isSavedSuccess = PublishSubject<Bool>()
     let caffeineIntakeSubject = BehaviorSubject(value: "0")
@@ -118,7 +114,7 @@ final class FirstRunViewModel {
             userInfoManagedObject.setValue(isEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
             userInfoManagedObject.setValue(time ?? nil, forKey: CoreDataAttributes.notificationTime.rawValue)
             try context.save()
-            UserDefaults.standard.set(true, forKey: UserDefaultsForKeyName.firstRun.rawValue)
+            UserDefaults.standard.set(true, forKey: UserDefaultsForKeyName.tutorial.rawValue)
             isSavedSuccess.onNext(true)
         } catch {
             print("ERROR save notification state: \(error.localizedDescription)")

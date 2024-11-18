@@ -238,11 +238,8 @@ extension RecordEntryViewController {
         recordEntryView.recordSaveButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.recordEntryView else { return }
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
                 let intakeDate = self?.recordViewModel.selectedDate ?? Date()
-                let intakeDateString = dateFormatter.string(from: intakeDate)
-                
+                let intakeDateString = intakeDate.toString()
                 let selectedButton = [
                     view.oneShotButton,
                     view.twoShotButton,

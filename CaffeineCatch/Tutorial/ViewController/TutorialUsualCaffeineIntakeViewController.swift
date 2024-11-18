@@ -1,5 +1,5 @@
 //
-//  FirstRunUsualCaffeineIntakeViewController.swift
+//  TutorialUsualCaffeineIntakeViewController.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -9,16 +9,15 @@ import Foundation
 import UIKit
 import RxSwift
 
-final class FirstRunUsualCaffeineIntakeViewController: UIViewController {
-    private let firstRunUsualCaffeineIntakeView = FirstRunUsualCaffeineIntakeView()
-    private let firstRunViewModel: FirstRunViewModel
+final class TutorialUsualCaffeineIntakeViewController: UIViewController {
+    private let tutorialUsualCaffeineIntakeView = TutorialUsualCaffeineIntakeView()
+    private let tutorialViewModel: TutorialViewModel
     private let nextButton = NextButton()
     private let disposeBag = DisposeBag()
     
-    init(viewModel: FirstRunViewModel = FirstRunViewModel()) {
-        self.firstRunViewModel = viewModel
+    init(viewModel: TutorialViewModel = TutorialViewModel()) {
+        self.tutorialViewModel = viewModel
         super.init(nibName: nil, bundle: nil)
-//        self.firstRunViewModel.deleteAllData()
     }
     
     required init?(coder: NSCoder) {
@@ -34,15 +33,14 @@ final class FirstRunUsualCaffeineIntakeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("usual intake view will appear")
     }
 }
 
-extension FirstRunUsualCaffeineIntakeViewController {
+extension TutorialUsualCaffeineIntakeViewController {
     // MARK: Configure
     private func configureFirstRunUsualCaffeineIntakeView() {
-        firstRunUsualCaffeineIntakeView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(firstRunUsualCaffeineIntakeView)
+        tutorialUsualCaffeineIntakeView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(tutorialUsualCaffeineIntakeView)
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: nextButton)
     }
@@ -50,19 +48,19 @@ extension FirstRunUsualCaffeineIntakeViewController {
     // MARK: Set Layout Constraint
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
-            firstRunUsualCaffeineIntakeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            firstRunUsualCaffeineIntakeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            firstRunUsualCaffeineIntakeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            firstRunUsualCaffeineIntakeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            tutorialUsualCaffeineIntakeView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tutorialUsualCaffeineIntakeView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tutorialUsualCaffeineIntakeView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tutorialUsualCaffeineIntakeView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
     private func changeShotButtonsProperty(selectedButton: IntakeButton) {
         var buttons = [
-            firstRunUsualCaffeineIntakeView.twoShotOrLessButton,
-            firstRunUsualCaffeineIntakeView.twoShotButton,
-            firstRunUsualCaffeineIntakeView.threeShotButton,
-            firstRunUsualCaffeineIntakeView.fourShotOrMoreButton
+            tutorialUsualCaffeineIntakeView.twoShotOrLessButton,
+            tutorialUsualCaffeineIntakeView.twoShotButton,
+            tutorialUsualCaffeineIntakeView.threeShotButton,
+            tutorialUsualCaffeineIntakeView.fourShotOrMoreButton
         ]
         guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return  }
         buttons.remove(at: selectedIndex)
@@ -86,34 +84,34 @@ extension FirstRunUsualCaffeineIntakeViewController {
     }
     
     private func bindShotButtons() {
-        firstRunUsualCaffeineIntakeView.twoShotOrLessButton.rx.tap
+        tutorialUsualCaffeineIntakeView.twoShotOrLessButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineIntakeView else { return }
+                guard let view = self?.tutorialUsualCaffeineIntakeView else { return }
                 self?.changeShotButtonsProperty(selectedButton: view.twoShotOrLessButton)
             })
             .disposed(by: disposeBag)
         
-        firstRunUsualCaffeineIntakeView.twoShotButton.rx.tap
+        tutorialUsualCaffeineIntakeView.twoShotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineIntakeView else { return }
+                guard let view = self?.tutorialUsualCaffeineIntakeView else { return }
                 self?.changeShotButtonsProperty(selectedButton: view.twoShotButton)
             })
             .disposed(by: disposeBag)
         
-        firstRunUsualCaffeineIntakeView.threeShotButton.rx.tap
+        tutorialUsualCaffeineIntakeView.threeShotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineIntakeView else { return }
+                guard let view = self?.tutorialUsualCaffeineIntakeView else { return }
                 self?.changeShotButtonsProperty(selectedButton: view.threeShotButton)
             })
             .disposed(by: disposeBag)
         
-        firstRunUsualCaffeineIntakeView.fourShotOrMoreButton.rx.tap
+        tutorialUsualCaffeineIntakeView.fourShotOrMoreButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineIntakeView else { return }
+                guard let view = self?.tutorialUsualCaffeineIntakeView else { return }
                 self?.changeShotButtonsProperty(selectedButton: view.fourShotOrMoreButton)
             })
             .disposed(by: disposeBag)
@@ -123,7 +121,7 @@ extension FirstRunUsualCaffeineIntakeViewController {
         nextButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
-                guard let view = self?.firstRunUsualCaffeineIntakeView else { return }
+                guard let view = self?.tutorialUsualCaffeineIntakeView else { return }
                 let buttons = [
                     view.twoShotOrLessButton,
                     view.twoShotButton,
@@ -134,16 +132,16 @@ extension FirstRunUsualCaffeineIntakeViewController {
                 print("selectedButton: \(selectedButton.titleLabel?.text)")
                 switch selectedButton {
                 case view.twoShotOrLessButton:
-                    self?.firstRunViewModel.saveUsualCaffeineIntake(Caffeine.oneShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.oneShot.rawValue)
                     return
                 case view.twoShotButton:
-                    self?.firstRunViewModel.saveUsualCaffeineIntake(Caffeine.twoShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.twoShot.rawValue)
                     return
                 case view.threeShotButton:
-                    self?.firstRunViewModel.saveUsualCaffeineIntake(Caffeine.threeShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.threeShot.rawValue)
                     return
                 case view.fourShotOrMoreButton:
-                    self?.firstRunViewModel.saveUsualCaffeineIntake(Caffeine.fourShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.fourShot.rawValue)
                     return
                 default: return
                 }
@@ -152,14 +150,14 @@ extension FirstRunUsualCaffeineIntakeViewController {
     }
     
     private func bindIsSavedSuccess() {
-        firstRunViewModel.isSavedSuccess
+        tutorialViewModel.isSavedSuccess
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isSavedSuccess in
                 guard isSavedSuccess else {
                     print("저장실패..")
                     return }
                 print("저장성공^^..")
-                self?.navigationController?.pushViewController(FirstRunGoalCaffeineIntakeViewController(), animated: true)
+                self?.navigationController?.pushViewController(TutorialGoalCaffeineIntakeViewController(), animated: true)
             })
             .disposed(by: disposeBag)
     }

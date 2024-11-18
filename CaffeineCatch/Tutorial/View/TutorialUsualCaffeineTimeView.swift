@@ -1,5 +1,5 @@
 //
-//  FirstRunUsualCaffeineTimeView.swift
+//  TutorialUsualCaffeineTimeView.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/12/24.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class FirstRunUsualCaffeineTimeView: UIView {
+final class TutorialUsualCaffeineTimeView: UIView {
     private let questionLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -63,7 +63,7 @@ final class FirstRunUsualCaffeineTimeView: UIView {
     }
 }
 
-extension FirstRunUsualCaffeineTimeView {
+extension TutorialUsualCaffeineTimeView {
     private func addSubviews() {
         [
             questionLabel,

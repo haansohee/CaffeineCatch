@@ -1,5 +1,5 @@
 //
-//  FirstRunUsualCaffeineIntakeView.swift
+//  TutorialUsualCaffeineIntakeView.swift
 //  CaffeineCatch
 //
 //  Created by 한소희 on 11/11/24.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class FirstRunUsualCaffeineIntakeView: UIView {
+final class TutorialUsualCaffeineIntakeView: UIView {
     private let welcomeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -66,7 +66,7 @@ final class FirstRunUsualCaffeineIntakeView: UIView {
     }
 }
 
-extension FirstRunUsualCaffeineIntakeView {
+extension TutorialUsualCaffeineIntakeView {
     private func addSubviews() {
         [
             fourShotOrMoreButton,

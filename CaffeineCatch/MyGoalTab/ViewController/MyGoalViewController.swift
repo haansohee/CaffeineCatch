@@ -93,7 +93,11 @@ extension MyGoalViewController {
             .drive(onNext: {[ weak self] myGoalCaffeineIntake in
                 guard !myGoalCaffeineIntake.isEmpty,
                       myGoalCaffeineIntake.first != "0" else { return }  // 에러 처리 하십시옹 담곰씨
-                self?.myGoalView.goalSettingLabel.text = "나의 하루 카페인 섭취량 목표는\n\n\(myGoalCaffeineIntake)예요. ✊🏻"
+                let fullText = "나의 하루 카페인 섭취량 목표는\n\n\(myGoalCaffeineIntake)예요."
+                let attributedText = NSMutableAttributedString(string: fullText)
+                let range = (fullText as NSString).range(of: "\(myGoalCaffeineIntake)")
+                attributedText.addAttribute(.foregroundColor, value: UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0), range: range)
+                self?.myGoalView.goalSettingLabel.attributedText = attributedText
             })
             .disposed(by: disposeBag)
     }
