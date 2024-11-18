@@ -12,13 +12,17 @@ import RxSwift
 final class RecordEntryViewController: UIViewController {
     private let recordEntryView = RecordEntryView()
     private let recordViewModel: RecordViewModel
+    private let myGoalViewModel: MyGoalViewModel
     private let disposeBag = DisposeBag()
     
     init(recordViewModel: RecordViewModel = RecordViewModel(),
+         myGoalViewModel: MyGoalViewModel = MyGoalViewModel(),
          selectedDate: Date) {
         self.recordViewModel = recordViewModel
+        self.myGoalViewModel = myGoalViewModel
         self.recordViewModel.selectedDate = selectedDate
         super.init(nibName: nil, bundle: nil)
+        self.myGoalViewModel.fetchMyGoalCaffeineIntake()
     }
     
     required init?(coder: NSCoder) {
@@ -119,6 +123,7 @@ extension RecordEntryViewController {
         bindSohtMgButton()
         bindRecordSaveButton()
         bindIsSavedCoreData()
+        bindMyGoalCaffeineIntakeSubject()
     }
     
     private func bindIntakeButtons() {
@@ -233,11 +238,8 @@ extension RecordEntryViewController {
         recordEntryView.recordSaveButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.recordEntryView else { return }
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
                 let intakeDate = self?.recordViewModel.selectedDate ?? Date()
-                let intakeDateString = dateFormatter.string(from: intakeDate)
-                
+                let intakeDateString = intakeDate.toString()
                 let selectedButton = [
                     view.oneShotButton,
                     view.twoShotButton,
@@ -309,6 +311,16 @@ extension RecordEntryViewController {
             .subscribe(onNext: {[weak self] isSavedCoreData in
                 guard isSavedCoreData else { return } // 에러 처리 하십시옹 담곰씨
                 print("저장이 됐어요^.^")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindMyGoalCaffeineIntakeSubject() {
+        myGoalViewModel.myGoalCaffeineIntakeSubject
+            .asDriver(onErrorJustReturn: "0")
+            .drive(onNext: {[weak self] myGoalCaffeineIntakeSubject in
+                guard myGoalCaffeineIntakeSubject != "0" else { return }
+                self?.recordEntryView.myGoalIntakeLabel.text = "나의 하루 목표 섭취량은 \(myGoalCaffeineIntakeSubject)예요."
             })
             .disposed(by: disposeBag)
     }

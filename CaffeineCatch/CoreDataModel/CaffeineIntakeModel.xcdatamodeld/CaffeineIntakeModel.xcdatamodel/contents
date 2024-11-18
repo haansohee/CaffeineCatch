@@ -4,5 +4,6 @@
         <attribute name="caffeineIntakeDate" optional="YES" attributeType="String"/>
         <attribute name="intake" optional="YES" attributeType="String"/>
         <attribute name="isCaffeine" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isGoalIntakeExceeded" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
     </entity>
 </model>

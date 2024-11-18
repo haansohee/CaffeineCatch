@@ -31,6 +31,7 @@ final class RecordViewController: UIViewController {
         self.recordViewModel = recordViewModel
         super.init(nibName: nil, bundle: nil)
         self.recordViewModel.fetchRecordCaffeineIntake(date: Date())
+        self.recordViewModel.fetchDateStatus()
     }
     
     required init?(coder: NSCoder) {
@@ -41,6 +42,7 @@ final class RecordViewController: UIViewController {
         super.viewDidLoad()
         configureRecordViewController()
         configureFSCalendar()
+        notificationObbServer()
         setLayoutConstraints()
         bindAll()
     }
@@ -48,6 +50,7 @@ final class RecordViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         fetchCaffeineIntakeRecord()
+        recordViewModel.fetchDateStatus()
     }
 }
 
@@ -66,6 +69,17 @@ extension RecordViewController {
         calenderView.delegate = self
         calenderView.dataSource = self
         calenderView.scope = .month
+        calenderView.locale = Locale(identifier: "ko_KR")
+        calenderView.appearance.todayColor = UIColor(red: 154/255, green: 153/255, blue: 196/255, alpha: 1.0)
+        calenderView.appearance.selectionColor = UIColor(red: 154/255, green: 153/255, blue: 196/255, alpha: 0.5)
+    }
+    
+    private func notificationObbServer() {
+        NotificationCenter.default.addObserver(self, selector: #selector(fetch), name: NSNotification.Name(rawValue: "test"), object: nil)
+    }
+    
+    @objc private func fetch() {
+        recordViewModel.fetchDateStatus()
     }
     
     //MARK: Fetch Caffeine Intake Record
@@ -118,6 +132,7 @@ extension RecordViewController {
         bindNonCaffeineInTakeCollectionViewSection()
         bindCaffeineIntakeData()
         bindRecordAddButton()
+        bindIsFetchedDateStatus()
     }
     
     private func bindNonCaffeineInTakeCollectionViewSection() {
@@ -151,21 +166,38 @@ extension RecordViewController {
             })
             .disposed(by: disposeBag)
     }
+    
+    private func bindIsFetchedDateStatus() {
+        recordViewModel.isFetchedDateStatus
+            .asDriver(onErrorJustReturn: false)
+            .drive(onNext: {[weak self] isFetchedDateStatus in
+                print("isFetchedDateStatus: \(isFetchedDateStatus)")
+                guard isFetchedDateStatus else { return }
+                self?.calenderView.reloadData()
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 extension RecordViewController: FSCalendarDelegate {
+    func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
+        recordViewModel.selectedDate = date
+        recordViewModel.fetchRecordCaffeineIntake(date: date)
+    }
 }
 
 extension RecordViewController: FSCalendarDataSource {
     func calendar(_ calendar: FSCalendar, subtitleFor date: Date) -> String? {
-        guard Calendar.current.isDate(date, inSameDayAs: Date()) else { return nil }
-        return "오늘"
-    }
-
-    func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
-        recordViewModel.selectedDate = date
-        recordViewModel.fetchRecordCaffeineIntake(date: date)
-        print(date)
+//        if Calendar.current.isDate(date, inSameDayAs: Date()) {
+//            return "오늘"
+//        }
+        switch date.toString() {
+        case Date().toString():
+            return "오늘"
+        default:
+            guard let isExceeded = recordViewModel.dateStatus[date] else { return nil }
+            return isExceeded ? "❌" : "⭐️"
+        }
     }
 }
 

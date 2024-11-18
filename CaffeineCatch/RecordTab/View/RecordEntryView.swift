@@ -34,7 +34,7 @@ final class RecordEntryView: UIScrollView {
         return label
     }()
     
-    private let myGoalIntakeLabel: UILabel = {
+    let myGoalIntakeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "나의 하루 목표 섭취량은 150mg(2shot) 이하예요."

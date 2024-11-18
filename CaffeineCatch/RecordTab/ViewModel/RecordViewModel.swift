@@ -14,17 +14,19 @@ final class RecordViewModel {
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var nonCaffeineInTakeData: [SectionOfInTakeNonCaffeineData] = []
     let isSavedIntakeRecord = PublishSubject<Bool>()
+    let isFetchedDateStatus = PublishSubject<Bool>()
     let caffeineIntakeData = BehaviorSubject(value: "기록이 없어요.")
     let nonCaffeineSectionData = BehaviorSubject<[SectionOfInTakeNonCaffeineData]>(
         value: [SectionOfInTakeNonCaffeineData(
             header: SectionHeaderName.nonCaffeine.rawValue,
             items: [InTakeNonCaffeineData(nonCaffeine: "기록이 없어요.")])])
     var selectedDate: Date?
+    private(set) var dateStatus: [Date: Bool] = [:]
     
     func fetchRecordCaffeineIntake(date: Date) {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let today = dateFormatter.string(from: date)
+        print("fetchRecordCaffeineIntake")
+        let today = date.toString()
+        print("today: \(today)")
         
         let context = appDelegate.caffeinePersistentContainer.viewContext
         let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
@@ -69,23 +71,16 @@ final class RecordViewModel {
 //        }
 //    }
     
-    private func convertMgToShot(_ inputValue: String) -> String? {
-        let inputData = inputValue.split(separator: " ").map(String.init)
-        guard let unit = inputData.last else { return nil }
+    func convertStringToInt(_ value: String) -> Int {
+        let inputData = value.split(separator: " ").map(String.init)
         guard let value = inputData.first,
-              let valueInt = Int(value) else { return nil }
-        switch IntakeUnitName(rawValue: unit) {
-        case .mg:
-            let shot = valueInt / 75
-            return "\(shot) shot (\(valueInt)mg)"
-        case .shot:
-            let mg = valueInt * 75
-            return "\(valueInt) shot (\(mg)mg)"
-            default:
-            return nil
-        }
+              let valueInt = Int(value) else { return 0 }
+        return valueInt
     }
-
+    
+    private func notificationPost() {
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "test"), object: nil)
+    }
     
     func saveRecordCaffeineIntake(_ caffeineIntake: CaffeineIntake, isDirectInput: Bool) {
         let context = appDelegate.caffeinePersistentContainer.viewContext
@@ -93,7 +88,7 @@ final class RecordViewModel {
         guard let entity else { return }
         let newCaffieneIntakeInfo = NSManagedObject(entity: entity, insertInto: context)
         
-        let inputCaffeineIntakeData = isDirectInput ? convertMgToShot(caffeineIntake.intake) : caffeineIntake.intake
+        let inputCaffeineIntakeData = isDirectInput ? (caffeineIntake.intake).convertMgToShot() : caffeineIntake.intake
         guard let inputCaffeineIntake = inputCaffeineIntakeData else {
             isSavedIntakeRecord.onNext(false)
             return }
@@ -104,10 +99,13 @@ final class RecordViewModel {
                 fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND isCaffeine == true", caffeineIntake.caffeineIntakeDate)
                 let caffeineIntakes = try context.fetch(fetchCaffeineRequest)
                 guard let caffeineIntakeDatas = caffeineIntakes.first else {  // 기존 데이터 없을 때
+                    let isGoalIntakeExceeded = compareIsGoalIntakeExceeded(inputCaffeineIntake)
                     newCaffieneIntakeInfo.setValue(caffeineIntake.caffeineIntakeDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
                     newCaffieneIntakeInfo.setValue(caffeineIntake.isCaffeine, forKey: CoreDataAttributes.isCaffeine.rawValue)
                     newCaffieneIntakeInfo.setValue(inputCaffeineIntake, forKey: CoreDataAttributes.intake.rawValue)
+                    newCaffieneIntakeInfo.setValue(isGoalIntakeExceeded, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
                     try context.save()
+                    notificationPost()
                     isSavedIntakeRecord.onNext(true)
                     return
                 }
@@ -119,21 +117,43 @@ final class RecordViewModel {
                     inputIntake: inputCaffeineIntake) else {
                     isSavedIntakeRecord.onNext(false)
                     return }
+                let isGoalIntakeExceeded = compareIsGoalIntakeExceeded(saveCaffeineIntake)
                 caffeineIntakeInfoUpdateInfo.setValue(caffeineIntake.caffeineIntakeDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
                 caffeineIntakeInfoUpdateInfo.setValue(caffeineIntake.isCaffeine, forKey: CoreDataAttributes.isCaffeine.rawValue)
                 caffeineIntakeInfoUpdateInfo.setValue(saveCaffeineIntake, forKey: CoreDataAttributes.intake.rawValue)
+                caffeineIntakeInfoUpdateInfo.setValue(isGoalIntakeExceeded, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
                 try context.save()
+                notificationPost()
                 isSavedIntakeRecord.onNext(true)
             } else {  // non카페인 섭취
                 newCaffieneIntakeInfo.setValue(caffeineIntake.caffeineIntakeDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
                 newCaffieneIntakeInfo.setValue(caffeineIntake.isCaffeine, forKey: CoreDataAttributes.isCaffeine.rawValue)
                 newCaffieneIntakeInfo.setValue(caffeineIntake.intake, forKey: CoreDataAttributes.intake.rawValue)
                 try context.save()
+                notificationPost()
                 isSavedIntakeRecord.onNext(true)
             }
         } catch {
             print(error.localizedDescription)
             isSavedIntakeRecord.onNext(false)
+        }
+    }
+    
+    func fetchDateStatus() {
+        let context = appDelegate.caffeinePersistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+        fetchRequest.predicate = NSPredicate(format: "caffeineIntakeDate != nil")
+        do {
+            let goalIntakeExceededInfos = try context.fetch(fetchRequest)
+            goalIntakeExceededInfos.forEach {
+                guard let dateString = $0.caffeineIntakeDate,
+                      let date = dateString.toDate() else { return }
+                dateStatus[date] = $0.isGoalIntakeExceeded
+            }
+            isFetchedDateStatus.onNext(true)
+        } catch {
+            print("error fetchDateStatus: \(error.localizedDescription)")
+            isFetchedDateStatus.onNext(false)
         }
     }
     
@@ -154,5 +174,23 @@ final class RecordViewModel {
               let inputIntakeShot = Int(inputIntakeShotText) else { return nil }  // 저장할 값
         
         return "\(intakeShot + inputIntakeShot) shot (\(intakeMg + inputIntakeMg)mg)"
+    }
+    
+    private func compareIsGoalIntakeExceeded(_ caffeineIntake: String) -> Bool? {
+        let inputCaffeineIntake = convertStringToInt(caffeineIntake)
+        
+        let context = appDelegate.userPersistentContainer.viewContext
+        let fetchCaffeineRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
+        do {
+            let goalCaffeineIntakes = try context.fetch(fetchCaffeineRequest)
+            let caffeine = goalCaffeineIntakes
+                .map { $0.goalCaffeineIntake }
+            guard let goalData = caffeine.first as? String else { return nil }
+            let goalCaffeineIntake = convertStringToInt(goalData)
+            return inputCaffeineIntake > goalCaffeineIntake
+        } catch {
+            print("error fetch caffeineIntakes: \(error.localizedDescription)")
+            return nil
+        }
     }
 }
