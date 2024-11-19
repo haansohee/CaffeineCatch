@@ -10,10 +10,13 @@ import Foundation
 enum CoreDataAttributes: String {
     case usualCaffeineIntake
     case goalCaffeineIntake
+    case goalWaterIntake
+    case isZeroCaffeine
     case notificationEnabled
     case notificationTime
     case caffeineIntakeDate
     case intake
+    case waterIntake
     case isCaffeine
     case isGoalIntakeExceeded
 }

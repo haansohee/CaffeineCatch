@@ -10,5 +10,6 @@ import Foundation
 enum IntakeUnitName: String {
     case mg
     case shot
+    case ml
     case `default`
 }

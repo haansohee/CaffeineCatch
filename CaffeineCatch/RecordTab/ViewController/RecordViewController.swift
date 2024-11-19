@@ -20,7 +20,7 @@ final class RecordViewController: UIViewController {
         let button = UIButton()
         let imageConfig = UIImage.SymbolConfiguration(pointSize: 50.0, weight: .light)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tintColor = .systemBlue
+        button.tintColor = UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0)
         button.backgroundColor = .white
         button.setImage(UIImage(systemName: "plus.circle.fill", withConfiguration: imageConfig), for: .normal)
         button.layer.cornerRadius = 25.0
@@ -42,7 +42,7 @@ final class RecordViewController: UIViewController {
         super.viewDidLoad()
         configureRecordViewController()
         configureFSCalendar()
-        notificationObbServer()
+        addNotificationUpdateMyGoalCaffeineIntake()
         setLayoutConstraints()
         bindAll()
     }
@@ -70,15 +70,16 @@ extension RecordViewController {
         calenderView.dataSource = self
         calenderView.scope = .month
         calenderView.locale = Locale(identifier: "ko_KR")
-        calenderView.appearance.todayColor = UIColor(red: 154/255, green: 153/255, blue: 196/255, alpha: 1.0)
-        calenderView.appearance.selectionColor = UIColor(red: 154/255, green: 153/255, blue: 196/255, alpha: 0.5)
+        calenderView.appearance.todayColor = UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0)
+        calenderView.appearance.selectionColor = UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 0.5)
     }
     
-    private func notificationObbServer() {
-        NotificationCenter.default.addObserver(self, selector: #selector(fetch), name: NSNotification.Name(rawValue: "test"), object: nil)
+    // MARK: NotificationCenter
+    private func addNotificationUpdateMyGoalCaffeineIntake() {
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMyGoalCaffeineIntake), name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
     }
     
-    @objc private func fetch() {
+    @objc private func updateMyGoalCaffeineIntake() {
         recordViewModel.fetchDateStatus()
     }
     
@@ -171,7 +172,6 @@ extension RecordViewController {
         recordViewModel.isFetchedDateStatus
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isFetchedDateStatus in
-                print("isFetchedDateStatus: \(isFetchedDateStatus)")
                 guard isFetchedDateStatus else { return }
                 self?.calenderView.reloadData()
             })
@@ -188,9 +188,6 @@ extension RecordViewController: FSCalendarDelegate {
 
 extension RecordViewController: FSCalendarDataSource {
     func calendar(_ calendar: FSCalendar, subtitleFor date: Date) -> String? {
-//        if Calendar.current.isDate(date, inSameDayAs: Date()) {
-//            return "오늘"
-//        }
         switch date.toString() {
         case Date().toString():
             return "오늘"

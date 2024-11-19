@@ -11,4 +11,5 @@ struct CaffeineIntake {
     var caffeineIntakeDate: String
     var intake: String
     var isCaffeine: Bool
+    var waterIntake: String?
 }

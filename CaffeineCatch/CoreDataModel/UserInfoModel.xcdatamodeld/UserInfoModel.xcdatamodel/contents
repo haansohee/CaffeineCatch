@@ -2,6 +2,8 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23507" systemVersion="24A348" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="UserInfo" representedClassName="UserInfo" syncable="YES" codeGenerationType="class">
         <attribute name="goalCaffeineIntake" optional="YES" attributeType="String"/>
+        <attribute name="goalWaterIntake" optional="YES" attributeType="String"/>
+        <attribute name="isZeroCaffeine" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="notificationEnabled" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="notificationTime" optional="YES" attributeType="String"/>
         <attribute name="usualCaffeineIntake" optional="YES" attributeType="String"/>

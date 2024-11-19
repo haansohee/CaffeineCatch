@@ -45,12 +45,21 @@ final class TutorialGoalCaffeineIntakeView: UIView {
     let directInputTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "목표 섭취량"
+        textField.placeholder = " 목표 섭취량"
         textField.backgroundColor = .systemGray6
         textField.layer.cornerRadius = 10.0
         textField.isEnabled = false
         textField.keyboardType = .numberPad
         return textField
+    }()
+    
+    private let buttonStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 5.0
+        return stackView
     }()
     
     let shotButton: IntakeButton = {
@@ -71,6 +80,15 @@ final class TutorialGoalCaffeineIntakeView: UIView {
         return button
     }()
     
+    let waterButton: IntakeButton = {
+        let button = IntakeButton()
+        button.setTitle("물(mL)", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.isEnabled = false
+        button.backgroundColor = .lightGray
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         addSubviews()
@@ -85,18 +103,22 @@ final class TutorialGoalCaffeineIntakeView: UIView {
 extension TutorialGoalCaffeineIntakeView {
     private func addSubviews() {
         [
+            shotButton,
+            mgButton,
+            waterButton
+        ].forEach { buttonStackView.addArrangedSubview($0) }
+        [
             recommandLabel,
             recommandButton,
             directInputButton,
             directInputTextField,
-            shotButton,
-            mgButton
+            buttonStackView
         ].forEach { addSubview($0) }
     }
     
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
-            recommandLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 60.0),
+            recommandLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 40.0),
             recommandLabel.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor, constant: 24.0),
             recommandLabel.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor, constant: -24.0),
             
@@ -107,7 +129,7 @@ extension TutorialGoalCaffeineIntakeView {
             
             directInputButton.topAnchor.constraint(equalTo: recommandButton.bottomAnchor, constant: 12.0),
             directInputButton.leadingAnchor.constraint(equalTo: recommandButton.leadingAnchor),
-            directInputButton.trailingAnchor.constraint(equalTo: recommandButton.centerXAnchor),
+            directInputButton.widthAnchor.constraint(equalToConstant: 120.0),
             directInputButton.heightAnchor.constraint(equalTo: recommandButton.heightAnchor),
             
             directInputTextField.topAnchor.constraint(equalTo: directInputButton.topAnchor),
@@ -115,16 +137,11 @@ extension TutorialGoalCaffeineIntakeView {
             directInputTextField.trailingAnchor.constraint(equalTo: recommandButton.trailingAnchor),
             directInputTextField.heightAnchor.constraint(equalTo: directInputButton.heightAnchor),
             
-            shotButton.topAnchor.constraint(equalTo: directInputTextField.bottomAnchor, constant: 5.0),
-            shotButton.leadingAnchor.constraint(equalTo: directInputTextField.leadingAnchor),
-            shotButton.trailingAnchor.constraint(equalTo: directInputTextField.centerXAnchor, constant: -5.0),
-            shotButton.heightAnchor.constraint(equalTo: recommandButton.heightAnchor),
-            
-            mgButton.topAnchor.constraint(equalTo: shotButton.topAnchor),
-            mgButton.leadingAnchor.constraint(equalTo: directInputTextField.centerXAnchor, constant: 5.0),
-            mgButton.trailingAnchor.constraint(equalTo: directInputTextField.trailingAnchor),
-            mgButton.heightAnchor.constraint(equalTo: recommandButton.heightAnchor),
-            mgButton.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -120.0)
+            buttonStackView.topAnchor.constraint(equalTo: directInputTextField.bottomAnchor, constant: 5.0),
+            buttonStackView.leadingAnchor.constraint(equalTo: directInputTextField.leadingAnchor),
+            buttonStackView.trailingAnchor.constraint(equalTo: directInputTextField.trailingAnchor),
+            buttonStackView.heightAnchor.constraint(equalTo: recommandButton.heightAnchor),
+            buttonStackView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -60.0)
         ])
     }
 }

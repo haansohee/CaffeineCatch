@@ -15,20 +15,6 @@ final class TutorialViewModel {
     let isSavedSuccess = PublishSubject<Bool>()
     let caffeineIntakeSubject = BehaviorSubject(value: "0")
     
-    func deleteAllData() { // 나중에 쓸 녀석이라 안 지웠어요..
-        let context = appDelegate.userPersistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: EntityName.UserInfo.rawValue)
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-        
-        do {
-            try context.execute(deleteRequest)
-            try context.save()
-            print("모든 데이터 삭제 완료~~")
-        } catch {
-            print("데이터 삭제 실패: \(error)")
-        }
-    }
-    
     func saveUsualCaffeineIntake(_ caffeineIntake: String) {
         let context = appDelegate.userPersistentContainer.viewContext
         let entity = NSEntityDescription.entity(forEntityName: EntityName.UserInfo.rawValue, in: context)
@@ -66,14 +52,14 @@ final class TutorialViewModel {
                 caffeineIntakeSubject.onNext("0")
                 return }
             guard let recommandCaffeineInatke = recommandCaffeineIntake(usualCaffeineIntake) else { return }
-            caffeineIntakeSubject.onNext(recommandCaffeineInatke)
+            caffeineIntakeSubject.onNext(recommandCaffeineInatke.0)
         } catch {
             print("ERROR save goal caffeine intake: \(error.localizedDescription)")
             caffeineIntakeSubject.onNext("0")
         }
     }
     
-    func saveGoalCaffeineIntake(_ goalCaffeineIntake: String? = nil) {
+    func saveGoalCaffeineIntake(_ goalCaffeineIntake: String? = nil, isWater: Bool? = nil) {
         let context = appDelegate.userPersistentContainer.viewContext
         do {
             let fetchRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
@@ -85,15 +71,38 @@ final class TutorialViewModel {
                 isSavedSuccess.onNext(false)
                 return }
             let userInfoManagedObject = userInfo as NSManagedObject
-            guard let myGoalCaffeineIntake = goalCaffeineIntake?.convertMgToShot() else {
+            guard let isWater = isWater else {
                 let myGoalCaffeineIntake = recommandCaffeineIntake(usualCaffeineIntake)
-                userInfoManagedObject.setValue(myGoalCaffeineIntake, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+                guard let goalIntake = myGoalCaffeineIntake?.0,
+                      let isZeroCaffeine = myGoalCaffeineIntake?.1 else {
+                    isSavedSuccess.onNext(false)
+                    return
+                }
+                userInfoManagedObject.setValue(goalIntake, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+                userInfoManagedObject.setValue(isZeroCaffeine, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
                 try context.save()
                 isSavedSuccess.onNext(true)
                 return }
-            userInfoManagedObject.setValue("\(myGoalCaffeineIntake) 이하", forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
-            try context.save()
-            isSavedSuccess.onNext(true)
+            userInfoManagedObject.setValue(isWater, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
+            if isWater {
+                guard let myGoalWaterIntake = goalCaffeineIntake else {
+                    isSavedSuccess.onNext(false)
+                    return }
+                let myGoalWaterIntakeSplit = myGoalWaterIntake.split(separator: " ").map(String.init)
+                guard let myGoalWaterIntakeData = myGoalWaterIntakeSplit.first else {
+                    isSavedSuccess.onNext(false)
+                    return }
+                userInfoManagedObject.setValue("\(myGoalWaterIntakeData) mL", forKey: CoreDataAttributes.goalWaterIntake.rawValue)
+                try context.save()
+                isSavedSuccess.onNext(true)
+            } else {
+                guard let myGoalCaffeineIntake = goalCaffeineIntake?.convertMgToShot() else {
+                    isSavedSuccess.onNext(false)
+                    return }
+                userInfoManagedObject.setValue("\(myGoalCaffeineIntake) 이하", forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+                try context.save()
+                isSavedSuccess.onNext(true)
+            }
         } catch {
             print("ERROR save goal caffeine intake: \(error.localizedDescription)")
             isSavedSuccess.onNext(false)
@@ -122,12 +131,12 @@ final class TutorialViewModel {
         }
     }
     
-    private func recommandCaffeineIntake(_ caffeineIntake: String) -> String? {
+    private func recommandCaffeineIntake(_ caffeineIntake: String) -> (String, Bool)? {
         switch caffeineIntake {
-        case Caffeine.oneShot.rawValue: return "물 250ml 마시기"
-        case Caffeine.twoShot.rawValue: return "\(Caffeine.oneShot.rawValue) 이하"
-        case Caffeine.threeShot.rawValue: return "\(Caffeine.oneShot.rawValue) 이하"
-        case Caffeine.fourShot.rawValue: return "\(Caffeine.twoShot.rawValue) 이하"
+        case Caffeine.oneShot.rawValue: return ("물 250ml 마시기", true)
+        case Caffeine.twoShot.rawValue: return ("\(Caffeine.oneShot.rawValue) 이하", false)
+        case Caffeine.threeShot.rawValue: return ("\(Caffeine.oneShot.rawValue) 이하", false)
+        case Caffeine.fourShot.rawValue: return ("\(Caffeine.twoShot.rawValue) 이하", false)
         default: return nil
         }
     }

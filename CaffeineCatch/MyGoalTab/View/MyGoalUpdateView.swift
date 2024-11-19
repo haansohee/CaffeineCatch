@@ -12,7 +12,7 @@ final class MyGoalUpdateView: UIView {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.keyboardType = .numberPad
-        textField.placeholder = "수정할 값을 입력해 주세요."
+        textField.placeholder = " 수정할 값을 입력해 주세요."
         textField.backgroundColor = .systemGray5
         textField.textColor = .label
         textField.font = .systemFont(ofSize: 13.0, weight: .semibold)
@@ -43,10 +43,43 @@ final class MyGoalUpdateView: UIView {
         return button
     }()
     
-    let updateButton: AnimationButton = {
+    let goalCaffeineUpdateButton: AnimationButton = {
         let button = AnimationButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("이하로 수정할게요 ✅", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 13.5, weight: .semibold)
+        button.backgroundColor = .lightGray
+        button.layer.cornerRadius = 12.0
+        button.isEnabled = false
+        return button
+    }()
+    
+    private let waterTitleLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "제로 카페인 도전! 카페인 대신 물을 섭취해 보세요. 👍"
+        label.textColor = .label
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 13.0, weight: .light)
+        return label
+    }()
+    
+    let waterInputTextField: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.keyboardType = .numberPad
+        textField.placeholder = " 하루에 마실 물의 양"
+        textField.backgroundColor = .systemGray5
+        textField.textColor = .label
+        textField.font = .systemFont(ofSize: 13.0, weight: .semibold)
+        textField.layer.cornerRadius = 10.0
+        return textField
+    }()
+    
+    let goalWaterUpdateButton: AnimationButton = {
+        let button = AnimationButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("mL로 수정할게요 ✅", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 13.5, weight: .semibold)
         button.backgroundColor = .lightGray
         button.layer.cornerRadius = 12.0
@@ -82,7 +115,10 @@ extension MyGoalUpdateView {
             mgButton,
             shotButton,
             valueInputTextField,
-            updateButton,
+            goalCaffeineUpdateButton,
+            waterTitleLabel,
+            waterInputTextField,
+            goalWaterUpdateButton,
             descriptionLabel
         ].forEach { addSubview($0) }
     }
@@ -104,14 +140,29 @@ extension MyGoalUpdateView {
             valueInputTextField.trailingAnchor.constraint(equalTo: shotButton.leadingAnchor, constant: -8.0),
             valueInputTextField.heightAnchor.constraint(equalTo: mgButton.heightAnchor),
             
-            updateButton.topAnchor.constraint(equalTo: valueInputTextField.bottomAnchor, constant: 24.0),
-            updateButton.leadingAnchor.constraint(equalTo: valueInputTextField.leadingAnchor),
-            updateButton.trailingAnchor.constraint(equalTo: mgButton.trailingAnchor),
-            updateButton.heightAnchor.constraint(equalTo: mgButton.heightAnchor),
+            goalCaffeineUpdateButton.topAnchor.constraint(equalTo: valueInputTextField.bottomAnchor, constant: 24.0),
+            goalCaffeineUpdateButton.leadingAnchor.constraint(equalTo: valueInputTextField.leadingAnchor),
+            goalCaffeineUpdateButton.trailingAnchor.constraint(equalTo: mgButton.trailingAnchor),
+            goalCaffeineUpdateButton.heightAnchor.constraint(equalTo: mgButton.heightAnchor),
             
-            descriptionLabel.topAnchor.constraint(equalTo: updateButton.bottomAnchor, constant: 24.0),
-            descriptionLabel.leadingAnchor.constraint(equalTo: updateButton.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(equalTo: updateButton.trailingAnchor),
+            waterTitleLabel.topAnchor.constraint(equalTo: goalCaffeineUpdateButton.bottomAnchor, constant: 18.0),
+            waterTitleLabel.leadingAnchor.constraint(equalTo: valueInputTextField.leadingAnchor),
+            waterTitleLabel.trailingAnchor.constraint(equalTo: mgButton.trailingAnchor),
+            waterTitleLabel.heightAnchor.constraint(equalToConstant: 50.0),
+            
+            waterInputTextField.topAnchor.constraint(equalTo: waterTitleLabel.bottomAnchor, constant: 8.0),
+            waterInputTextField.leadingAnchor.constraint(equalTo: valueInputTextField.leadingAnchor),
+            waterInputTextField.trailingAnchor.constraint(equalTo: valueInputTextField.trailingAnchor),
+            waterInputTextField.heightAnchor.constraint(equalTo: valueInputTextField.heightAnchor),
+            
+            goalWaterUpdateButton.topAnchor.constraint(equalTo: waterInputTextField.topAnchor),
+            goalWaterUpdateButton.leadingAnchor.constraint(equalTo: shotButton.leadingAnchor),
+            goalWaterUpdateButton.trailingAnchor.constraint(equalTo: mgButton.trailingAnchor),
+            goalWaterUpdateButton.heightAnchor.constraint(equalTo: mgButton.heightAnchor),
+            
+            descriptionLabel.topAnchor.constraint(equalTo: goalWaterUpdateButton.bottomAnchor, constant: 24.0),
+            descriptionLabel.leadingAnchor.constraint(equalTo: goalCaffeineUpdateButton.leadingAnchor),
+            descriptionLabel.trailingAnchor.constraint(equalTo: goalCaffeineUpdateButton.trailingAnchor),
             descriptionLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -48.0)
         ])
     }

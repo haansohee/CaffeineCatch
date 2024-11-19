@@ -67,16 +67,18 @@ extension MyGoalUpdateViewCotnroller {
         disabledButton.isSelected = false
         disabledButton.backgroundColor = .systemBlue
         disabledButton.setTitle(disabledButtonTitle, for: .normal)
-        myGoalUpdateView.updateButton.isEnabled = true
-        myGoalUpdateView.updateButton.backgroundColor = .systemBlue
+        myGoalUpdateView.goalCaffeineUpdateButton.isEnabled = true
+        myGoalUpdateView.goalCaffeineUpdateButton.backgroundColor = .systemBlue
     }
     
     //MARK: Bind
     
     private func bindAll() {
         bindValueInputTextField()
+        bindWaterInputTextField()
         bindSohtMgButton()
-        bindUpdateButton()
+        bindGoalCaffeineUpdateButton()
+        bindGoalWaterUpdateButton()
         bindIsUpdatedGoalCaffeineIntake()
     }
     
@@ -87,8 +89,11 @@ extension MyGoalUpdateViewCotnroller {
             .drive(onNext: {[weak self] intakeValue in
                 guard let view = self?.myGoalUpdateView else { return }
                 let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
-                view.shotButton.isEnabled = isEnabled ? true : false
-                view.mgButton.isEnabled = isEnabled ? true : false
+                view.shotButton.isEnabled = isEnabled
+                view.mgButton.isEnabled = isEnabled
+                view.waterInputTextField.text = ""
+                view.goalWaterUpdateButton.isEnabled = false
+                view.goalWaterUpdateButton.backgroundColor = .lightGray
                 
                 if isEnabled {
                     view.shotButton.backgroundColor = view.shotButton.isSelected ? .systemGray4 : .systemBlue
@@ -96,13 +101,39 @@ extension MyGoalUpdateViewCotnroller {
                 } else {
                     view.shotButton.backgroundColor = .lightGray
                     view.mgButton.backgroundColor = .lightGray
-                    view.updateButton.backgroundColor = .lightGray
+                    view.goalCaffeineUpdateButton.backgroundColor = .lightGray
                     view.shotButton.isSelected = false
                     view.mgButton.isSelected = false
-                    view.updateButton.isEnabled = false
+                    view.goalCaffeineUpdateButton.isEnabled = false
                     view.shotButton.setTitle("shot", for: .normal)
                     view.mgButton.setTitle("mg", for: .normal)
                 }
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindWaterInputTextField() {
+        myGoalUpdateView.waterInputTextField.rx.text
+            .orEmpty
+            .asDriver()
+            .drive(onNext: {[weak self] intakeValue in
+                guard let view = self?.myGoalUpdateView else { return }
+                let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
+                view.valueInputTextField.text = ""
+                view.goalCaffeineUpdateButton.isEnabled = false
+                view.goalCaffeineUpdateButton.backgroundColor = .lightGray
+                view.mgButton.isEnabled = false
+                view.shotButton.isEnabled = false
+                view.shotButton.isSelected = false
+                view.mgButton.isSelected = false
+                view.mgButton.backgroundColor = .lightGray
+                view.shotButton.backgroundColor = .lightGray
+                view.goalCaffeineUpdateButton.backgroundColor = .lightGray
+                view.goalCaffeineUpdateButton.isEnabled = false
+                view.shotButton.setTitle("shot", for: .normal)
+                view.mgButton.setTitle("mg", for: .normal)
+                view.goalWaterUpdateButton.isEnabled = isEnabled
+                view.goalWaterUpdateButton.backgroundColor = isEnabled ? .systemBlue : .lightGray
             })
             .disposed(by: disposeBag)
     }
@@ -131,8 +162,8 @@ extension MyGoalUpdateViewCotnroller {
             .disposed(by: disposeBag)
     }
     
-    private func bindUpdateButton() {
-        myGoalUpdateView.updateButton.rx.tap
+    private func bindGoalCaffeineUpdateButton() {
+        myGoalUpdateView.goalCaffeineUpdateButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.myGoalUpdateView else { return }
                 guard let intakeValue = view.valueInputTextField.text,
@@ -141,6 +172,18 @@ extension MyGoalUpdateViewCotnroller {
                 guard view.mgButton.isSelected || view.shotButton.isSelected else { return }  // 에러 처리 하십시옹 담곰씨
                 let unitValue = view.mgButton.isSelected ? "mg" : "shot"
                 self?.myGoalViewModel.updateGoalCaffeineIntake("\(intakeValue) \(unitValue)")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindGoalWaterUpdateButton() {
+        myGoalUpdateView.goalWaterUpdateButton.rx.tap
+            .subscribe(onNext: {[weak self] _ in
+                guard let view = self?.myGoalUpdateView else { return }
+                guard let intakeValue = view.waterInputTextField.text,
+                      !intakeValue.isEmpty,
+                      intakeValue != "" else { return }  // 에러 처리 하십시옹 담곰씨
+                self?.myGoalViewModel.updateWaterCaffeineIntake("\(intakeValue) mL")
             })
             .disposed(by: disposeBag)
     }

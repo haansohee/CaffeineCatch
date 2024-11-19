@@ -281,7 +281,7 @@ extension RecordEntryViewController {
                           intakeValue != "",
                           let intakeCategory = selectedButton?.titleLabel?.text else { return }  // 에러 처리 하십시옹 담곰씨
                     let intake = "\(intakeCategory) \(intakeValue) mL"
-                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: false)
+                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: false, waterIntake: selectedButton == view.waterIntakeButton ? "\(intakeValue)" : nil)
                     self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: false)
                     
                 case view.oneShotButton,
@@ -316,11 +316,14 @@ extension RecordEntryViewController {
     }
     
     private func bindMyGoalCaffeineIntakeSubject() {
-        myGoalViewModel.myGoalCaffeineIntakeSubject
-            .asDriver(onErrorJustReturn: "0")
-            .drive(onNext: {[weak self] myGoalCaffeineIntakeSubject in
-                guard myGoalCaffeineIntakeSubject != "0" else { return }
-                self?.recordEntryView.myGoalIntakeLabel.text = "나의 하루 목표 섭취량은 \(myGoalCaffeineIntakeSubject)예요."
+        myGoalViewModel.userInfoSubject
+            .asDriver(onErrorJustReturn: ("0", false))
+            .drive(onNext: {[weak self] userInfoSubject in
+//                guard userInfoSubject != "0" else { return }
+                let goalIntake = userInfoSubject.0
+                let isZeroCaffeine = userInfoSubject.1
+                let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는 물 \(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는 \(goalIntake)예요."
+                self?.recordEntryView.myGoalIntakeLabel.text = fullText
             })
             .disposed(by: disposeBag)
     }

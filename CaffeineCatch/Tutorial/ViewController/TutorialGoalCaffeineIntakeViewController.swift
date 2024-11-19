@@ -59,16 +59,19 @@ extension TutorialGoalCaffeineIntakeViewController {
     private func changeUnitButtonsProperty(selectedButton: IntakeButton) {
         var buttons = [
             tutorialGoalCaffeineIntakeView.shotButton,
-            tutorialGoalCaffeineIntakeView.mgButton
+            tutorialGoalCaffeineIntakeView.mgButton,
+            tutorialGoalCaffeineIntakeView.waterButton
         ]
         guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return  }
         buttons.remove(at: selectedIndex)
         selectedButton.isSelected = true
         selectedButton.backgroundColor = .systemBlue
         selectedButton.setTitleColor(.white, for: .normal)
-        buttons[0].backgroundColor = .systemGray6
-        buttons[0].isSelected = false
-        buttons[0].setTitleColor(.label, for: .normal)
+        buttons.forEach {
+            $0.backgroundColor = .systemGray6
+            $0.isSelected = false
+            $0.setTitleColor(.label, for: .normal)
+        }
     }
     
     private func changeButtonsProperty(selectedButton: AnimationButton) {
@@ -88,10 +91,13 @@ extension TutorialGoalCaffeineIntakeViewController {
         tutorialGoalCaffeineIntakeView.directInputTextField.isEnabled = isSelected ? true : false
         tutorialGoalCaffeineIntakeView.shotButton.isEnabled = isSelected ? true : false
         tutorialGoalCaffeineIntakeView.mgButton.isEnabled = isSelected ? true : false
+        tutorialGoalCaffeineIntakeView.waterButton.isEnabled = isSelected ? true : false
         tutorialGoalCaffeineIntakeView.shotButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
         tutorialGoalCaffeineIntakeView.shotButton.setTitleColor(isSelected ? .label : .white, for: .normal)
         tutorialGoalCaffeineIntakeView.mgButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
         tutorialGoalCaffeineIntakeView.mgButton.setTitleColor(isSelected ? .label : .white, for: .normal)
+        tutorialGoalCaffeineIntakeView.waterButton.backgroundColor = isSelected ? .systemGray6 : .lightGray
+        tutorialGoalCaffeineIntakeView.waterButton.setTitleColor(isSelected ? .label : .white, for: .normal)
         nextButton.isHidden = false
     }
     
@@ -99,7 +105,7 @@ extension TutorialGoalCaffeineIntakeViewController {
     private func bindAll() {
         bindRecommandButton()
         bindDirectInputButton()
-        bindShotMgButton()
+        bindUnitButton()
         bindNextButton()
         bindCaffeineIntakeSubject()
         bindIsSavedSuccess()
@@ -126,7 +132,7 @@ extension TutorialGoalCaffeineIntakeViewController {
             .disposed(by: disposeBag)
     }
     
-    private func bindShotMgButton() {
+    private func bindUnitButton() {
         tutorialGoalCaffeineIntakeView.shotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
@@ -142,6 +148,14 @@ extension TutorialGoalCaffeineIntakeViewController {
                 self?.changeUnitButtonsProperty(selectedButton: view.mgButton)
             })
             .disposed(by: disposeBag)
+        
+        tutorialGoalCaffeineIntakeView.waterButton.rx.tap
+            .asDriver()
+            .drive(onNext: {[weak self] _ in
+                guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
+                self?.changeUnitButtonsProperty(selectedButton: view.waterButton)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func bindNextButton() {
@@ -151,7 +165,8 @@ extension TutorialGoalCaffeineIntakeViewController {
                 guard let view = self?.tutorialGoalCaffeineIntakeView else { return }
                 let buttons = [
                     view.recommandButton,
-                    view.directInputButton
+                    view.directInputButton,
+                    view.waterButton
                 ].filter { $0.isSelected }
                 guard let selectedButton = buttons.first else { return }  // 선택해야해욧! 선택해야 보이는 거긴 하지만 ㅎ..
                 
@@ -163,14 +178,16 @@ extension TutorialGoalCaffeineIntakeViewController {
                 case view.directInputButton:
                     let unitButtons = [
                         view.shotButton,
-                        view.mgButton
+                        view.mgButton,
+                        view.waterButton
                     ].filter { $0.isSelected }
                     guard let selectedButton = unitButtons.first,
                           let unitValue = selectedButton.titleLabel?.text,
                           let intakeValue = view.directInputTextField.text,
                           !intakeValue.isEmpty,
                           intakeValue != "" else { return }  // 선택, 입력해야해욧!!!!!!!!!!!!!!!!!!
-                    self?.tutorialViewModel.saveGoalCaffeineIntake("\(intakeValue) \(unitValue)")
+                    let isWater = selectedButton == view.waterButton
+                    self?.tutorialViewModel.saveGoalCaffeineIntake("\(intakeValue) \(unitValue)", isWater: isWater)
                     return
                     
                 default: return // 에러 처리
