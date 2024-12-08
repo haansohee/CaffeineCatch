@@ -120,7 +120,7 @@ extension RecordEntryViewController {
     //MARK: Bind
     private func bindAll() {
         bindIntakeButtons()
-        bindSohtMgButton()
+        bindShotMgButton()
         bindRecordSaveButton()
         bindIsSavedCoreData()
         bindMyGoalCaffeineIntakeSubject()
@@ -208,7 +208,7 @@ extension RecordEntryViewController {
             .disposed(by: disposeBag)
     }
     
-    private func bindSohtMgButton() {
+    private func bindShotMgButton() {
         recordEntryView.shotButton.rx.tap
             .asDriver()
             .drive(onNext: {[weak self] _ in
@@ -238,8 +238,6 @@ extension RecordEntryViewController {
         recordEntryView.recordSaveButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.recordEntryView else { return }
-                let intakeDate = self?.recordViewModel.selectedDate ?? Date()
-                let intakeDateString = intakeDate.toString()
                 let selectedButton = [
                     view.oneShotButton,
                     view.twoShotButton,
@@ -252,37 +250,37 @@ extension RecordEntryViewController {
                     view.teaIntakeButton,
                     view.anotherIntakeButton,
                 ].first { $0.isSelected }
+                print("selectedButton: \(selectedButton?.titleLabel?.text ?? "")")
                 
                 switch selectedButton {
                 case view.directInputButton:
                     let unitButton = [view.shotButton, view.mgButton].first { $0.isSelected }
-                    guard let intakeValue = view.directInputTextField.text,
-                          !(intakeValue.isEmpty),
-                          intakeValue != "",
-                          let unitText = unitButton?.titleLabel?.text else { return } // 에러 처리 하십시옹 담곰씨
-                    let intake = "\(intakeValue) \(unitText)"
-                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: true)
-                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: true)
+                    guard let intakeValue = view.directInputTextField.validatedText(),
+                          let unitText = unitButton?.titleLabel?.text,
+                          let intakeValueToInt = Int(intakeValue) else { return } // 에러 처리 하십시옹 담곰씨
+                    self?.recordViewModel.saveCaffeineIntakeRecord(intakeValueToInt, unitText)
                     
-                case view.waterIntakeButton,
-                    view.nonCaffeineIntakeButton,
+                case view.nonCaffeineIntakeButton,
                     view.milkIntakeButton,
                     view.teaIntakeButton,
                     view.anotherIntakeButton:
                     let selectedButton = [
-                        view.waterIntakeButton,
                         view.nonCaffeineIntakeButton,
                         view.milkIntakeButton,
                         view.teaIntakeButton,
                         view.anotherIntakeButton
                     ].first { $0.isSelected }
-                    guard let intakeValue = view.intakeInputTextField.text,
-                          !(intakeValue.isEmpty),
-                          intakeValue != "",
-                          let intakeCategory = selectedButton?.titleLabel?.text else { return }  // 에러 처리 하십시옹 담곰씨
-                    let intake = "\(intakeCategory) \(intakeValue) mL"
-                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: false, waterIntake: selectedButton == view.waterIntakeButton ? "\(intakeValue)" : nil)
-                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: false)
+                    guard let intakeValue = view.intakeInputTextField.validatedText(),
+                          let intakeCategory = selectedButton?.titleLabel?.text,
+                          let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+                    self?.recordViewModel.saveNonCaffeineIntakeRecord(intakeValueToInt, intakeCategory)
+                    
+                case view.waterIntakeButton:
+                    guard let intakeValue = view.intakeInputTextField.validatedText(),
+                          let intakeCategory = selectedButton?.titleLabel?.text,
+                          let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+                    self?.recordViewModel.saveWaterIntakeRecord(intakeValueToInt)
+                    
                     
                 case view.oneShotButton,
                     view.twoShotButton,
@@ -294,10 +292,17 @@ extension RecordEntryViewController {
                         view.threeShotButton,
                         view.fourShotButton
                     ].first { $0.isSelected }
-                    guard let titleLabel = selectedButton?.titleLabel?.text else { return } // 에러 처리 하십시옹 담곰씨
-                    let intake = "\(titleLabel)"
-                    let caffeineIntake = CaffeineIntake(caffeineIntakeDate: intakeDateString, intake: intake, isCaffeine: true)
-                    self?.recordViewModel.saveRecordCaffeineIntake(caffeineIntake, isDirectInput: false)
+                    switch selectedButton {
+                    case view.oneShotButton:
+                        self?.recordViewModel.saveCaffeineIntakeRecord(1, IntakeUnitName.shot.rawValue)
+                    case view.twoShotButton:
+                        self?.recordViewModel.saveCaffeineIntakeRecord(2, IntakeUnitName.shot.rawValue)
+                    case view.threeShotButton:
+                        self?.recordViewModel.saveCaffeineIntakeRecord(3, IntakeUnitName.shot.rawValue)
+                    case view.fourShotButton:
+                        self?.recordViewModel.saveCaffeineIntakeRecord(4, IntakeUnitName.shot.rawValue)
+                    default: return
+                    }
                     
                 default:
                     return // 에러 처리 하십시옹 담곰씨
@@ -319,10 +324,9 @@ extension RecordEntryViewController {
         myGoalViewModel.userInfoSubject
             .asDriver(onErrorJustReturn: ("0", false))
             .drive(onNext: {[weak self] userInfoSubject in
-//                guard userInfoSubject != "0" else { return }
-                let goalIntake = userInfoSubject.0
-                let isZeroCaffeine = userInfoSubject.1
-                let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는 물 \(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는 \(goalIntake)예요."
+                let goalIntake = userInfoSubject.intakeValue
+                let isZeroCaffeine = userInfoSubject.isZeroCaffeineUser
+                let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는 \(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는 \(goalIntake) 이하예요."
                 self?.recordEntryView.myGoalIntakeLabel.text = fullText
             })
             .disposed(by: disposeBag)

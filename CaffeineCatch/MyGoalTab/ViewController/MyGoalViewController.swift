@@ -91,9 +91,9 @@ extension MyGoalViewController {
         myGoalViewModel.userInfoSubject
             .asDriver(onErrorJustReturn: ("0", false))
             .drive(onNext: {[ weak self] myGoalCaffeineIntake in
-                let goalIntake = myGoalCaffeineIntake.0
-                let isZeroCaffeine = myGoalCaffeineIntake.1
-                let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는\n물 \(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는\n\n\(goalIntake)예요."
+                let goalIntake = myGoalCaffeineIntake.intakeValue
+                let isZeroCaffeine = myGoalCaffeineIntake.isZeroCaffeineUser
+                let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는\n\(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는\n\n\(goalIntake) 이하예요."
                 let attributedText = NSMutableAttributedString(string: fullText)
                 let range = (fullText as NSString).range(of: goalIntake)
                 attributedText.addAttribute(.foregroundColor, value: UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0), range: range)

@@ -32,3 +32,9 @@ extension String {
         return date
     }
 }
+
+extension Int {
+    func convertMgToShot(_ unit: String) -> Int {        
+        return unit == IntakeUnitName.shot.rawValue ? self : self / 75
+    }
+}

@@ -31,7 +31,7 @@ extension MyGoalUpdateViewCotnroller {
     //MARK: Configure
     private func configureMyGoalUpdateViewCotnroller() {
         myGoalUpdateView.translatesAutoresizingMaskIntoConstraints = false
-        self.sheetPresentationController?.detents = [.medium()]
+        self.sheetPresentationController?.detents = [.large()]
         self.sheetPresentationController?.prefersGrabberVisible = true
         self.sheetPresentationController?.preferredCornerRadius = 24.0
         view.addSubview(myGoalUpdateView)
@@ -88,7 +88,7 @@ extension MyGoalUpdateViewCotnroller {
             .asDriver()
             .drive(onNext: {[weak self] intakeValue in
                 guard let view = self?.myGoalUpdateView else { return }
-                let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
+                guard let isEnabled = self?.myGoalViewModel.isEmptyIntakeValue(intakeValue) else { return }
                 view.shotButton.isEnabled = isEnabled
                 view.mgButton.isEnabled = isEnabled
                 view.waterInputTextField.text = ""
@@ -118,7 +118,8 @@ extension MyGoalUpdateViewCotnroller {
             .asDriver()
             .drive(onNext: {[weak self] intakeValue in
                 guard let view = self?.myGoalUpdateView else { return }
-                let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
+//                let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
+                guard let isEnabled = self?.myGoalViewModel.isEmptyIntakeValue(intakeValue) else { return }
                 view.valueInputTextField.text = ""
                 view.goalCaffeineUpdateButton.isEnabled = false
                 view.goalCaffeineUpdateButton.backgroundColor = .lightGray
@@ -166,12 +167,11 @@ extension MyGoalUpdateViewCotnroller {
         myGoalUpdateView.goalCaffeineUpdateButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.myGoalUpdateView else { return }
-                guard let intakeValue = view.valueInputTextField.text,
-                      !intakeValue.isEmpty,
-                      intakeValue != "" else { return }
+                guard let intakeValue = view.valueInputTextField.validatedText(),
+                      let intakeValueInt = Int(intakeValue) else { return }
                 guard view.mgButton.isSelected || view.shotButton.isSelected else { return }  // 에러 처리 하십시옹 담곰씨
-                let unitValue = view.mgButton.isSelected ? "mg" : "shot"
-                self?.myGoalViewModel.updateGoalCaffeineIntake("\(intakeValue) \(unitValue)")
+                let unitValue = view.mgButton.isSelected ? IntakeUnitName.mg.rawValue : IntakeUnitName.shot.rawValue
+                self?.myGoalViewModel.updateGoalCaffeineIntake(intakeValueInt, unitValue)
             })
             .disposed(by: disposeBag)
     }
@@ -180,10 +180,10 @@ extension MyGoalUpdateViewCotnroller {
         myGoalUpdateView.goalWaterUpdateButton.rx.tap
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.myGoalUpdateView else { return }
-                guard let intakeValue = view.waterInputTextField.text,
-                      !intakeValue.isEmpty,
-                      intakeValue != "" else { return }  // 에러 처리 하십시옹 담곰씨
-                self?.myGoalViewModel.updateWaterCaffeineIntake("\(intakeValue) mL")
+                guard let intakeValue = view.waterInputTextField.validatedText(),
+                      let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+//                self?.myGoalViewModel.updateWaterCaffeineIntake("\(intakeValue) mL")
+                self?.myGoalViewModel.updateWaterCaffeineIntake(intakeValueToInt, IntakeUnitName.mL.rawValue)
             })
             .disposed(by: disposeBag)
     }

@@ -11,7 +11,8 @@ import UIKit
 import CoreData
 
 enum MyError: Error {
-    case noData
+    case noDataError
+    case calculationError
 }
 
 final class MyGoalViewModel {
@@ -23,7 +24,7 @@ final class MyGoalViewModel {
         items: [AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg")]
                 )])
     let isSavedCoreData = PublishSubject<Bool>()
-    let userInfoSubject = BehaviorSubject(value: ("0", false))
+    let userInfoSubject = BehaviorSubject(value: (intakeValue: "0", isZeroCaffeineUser: false))
     let isUpdatedGoalCaffeineIntake = PublishSubject<Bool>()
     
     func loadSectionData() {
@@ -48,13 +49,15 @@ final class MyGoalViewModel {
         do {
             let userInfos = try context.fetch(fetchUserReqeust)
             guard let userInfo = userInfos.first else {
-                userInfoSubject.onError(MyError.noData)
+                userInfoSubject.onError(MyError.noDataError)
                 return }
-            let goalIntake = userInfo.goalCaffeineIntake ?? userInfo.goalWaterIntake
+            let goalIntakeValue = userInfo.goalCaffeineIntake == 0 ? userInfo.goalWaterIntake : userInfo.goalCaffeineIntake
+            guard let goalIntakeUnit = userInfo.goalIntakeUnit,
+                  let goalIntakeCategory = userInfo.goalIntakeCategory else {
+                userInfoSubject.onError(MyError.noDataError)
+                return }
+            let goalIntake = "\(goalIntakeCategory) \(goalIntakeValue) \(goalIntakeUnit)"
             let isZeroCaffeine = userInfo.isZeroCaffeine
-            guard let goalIntake = goalIntake else {
-                userInfoSubject.onError(MyError.noData)
-                return }
             userInfoSubject.onNext((goalIntake, isZeroCaffeine))
         } catch {
             print("!! Fetch MyGoal Caffeine Intake Error: \(error.localizedDescription)")
@@ -62,30 +65,36 @@ final class MyGoalViewModel {
         }
     }
     
-    func updateGoalCaffeineIntake(_ updateData: String) {
+    func updateGoalCaffeineIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
         let context = appDelegate.userPersistentContainer.viewContext
         let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
         let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
         let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
-        guard let insertIntakeValue = updateData.convertMgToShot() else {
-            isUpdatedGoalCaffeineIntake.onNext(false)
-            return }
+        let insertIntakeValue = updateGoalIntakeValue.convertMgToShot(updateGoalIntakeUnit)
+        
         do {
             let userInfos = try context.fetch(fetchUserReqeust)
             guard let userInfo = userInfos.first else {
                 isUpdatedGoalCaffeineIntake.onNext(false)
                 return }
             let userInfoManagedObject = userInfo as NSManagedObject
-            userInfoManagedObject.setValue("\(insertIntakeValue) 이하", forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue(Int32(insertIntakeValue), forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue(updateGoalIntakeUnit, forKey: CoreDataAttributes.goalIntakeUnit.rawValue)
+            userInfoManagedObject.setValue(IntakeCategory.caffeine.rawValue, forKey: CoreDataAttributes.goalIntakeCategory.rawValue)
             userInfoManagedObject.setValue(nil, forKey: CoreDataAttributes.goalWaterIntake.rawValue)
             userInfoManagedObject.setValue(false, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
             try context.save()
+        } catch {
+            print("Update Goal Caffeine Intake ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+        
+        do {
             let caffeineRecords = try caffeineContext.fetch(fetchCaffeineRequest)
             caffeineRecords
                 .filter { $0.isCaffeine }
                 .forEach {
-                    guard let intake = $0.intake else { return }
-                    $0.isGoalIntakeExceeded = convertCaffeineIsGoalIntakeExceeded(intake, goalData: insertIntakeValue)
+                    $0.isGoalIntakeExceeded = $0.intake > updateGoalIntakeValue
                 }
             caffeineRecords
                 .filter { !$0.isCaffeine }
@@ -93,19 +102,20 @@ final class MyGoalViewModel {
                     $0.isGoalIntakeExceeded = false
                 }
             try caffeineContext.save()
-            NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
-            isUpdatedGoalCaffeineIntake.onNext(true)
         } catch {
-            print("Update Goal Caffeine Intake ERROR: \(error.localizedDescription)")
+            print("Update Caffeine isGoalIntakeExceeded ERROR: \(error.localizedDescription)")
             isUpdatedGoalCaffeineIntake.onError(error)
         }
+        NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+        isUpdatedGoalCaffeineIntake.onNext(true)
     }
     
-    func updateWaterCaffeineIntake(_ updateData: String) {
+    func updateWaterCaffeineIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
         let userContext = appDelegate.userPersistentContainer.viewContext
         let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
         let fetchUserRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
         let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+        
         do {
             let userInfos = try userContext.fetch(fetchUserRequest)
             guard let userInfo = userInfos.first else {
@@ -113,43 +123,35 @@ final class MyGoalViewModel {
                 return }
             let userInfoManagedObject = userInfo as NSManagedObject
             userInfoManagedObject.setValue(nil, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
-            userInfoManagedObject.setValue(updateData, forKey: CoreDataAttributes.goalWaterIntake.rawValue)
+            userInfoManagedObject.setValue(Int32(updateGoalIntakeValue), forKey: CoreDataAttributes.goalWaterIntake.rawValue)
+            userInfoManagedObject.setValue(updateGoalIntakeUnit, forKey: CoreDataAttributes.goalIntakeUnit.rawValue)
+            userInfoManagedObject.setValue(IntakeCategory.water.rawValue, forKey: CoreDataAttributes.goalIntakeCategory.rawValue)
             userInfoManagedObject.setValue(true, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
             try userContext.save()
+        } catch {
+            print("Update Goal Water Intake ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+        
+        do {
             let caffeineRecords = try caffeineContext.fetch(fetchCaffeineRequest)
             caffeineRecords.forEach {
                 guard !$0.isCaffeine else {
                     $0.isGoalIntakeExceeded = true
                     return }
-                guard let waterIntake = $0.waterIntake else { return }
-                $0.isGoalIntakeExceeded = convertWaterIsGoalIntakeExceeded(waterIntake, goalData: updateData)
+                $0.isGoalIntakeExceeded = $0.waterIntake < updateGoalIntakeValue
             }
             try caffeineContext.save()
-            NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
-            isUpdatedGoalCaffeineIntake.onNext(true)
         } catch {
-            print("Update Goal Water Intake ERROR: \(error.localizedDescription)")
+            print("Update Water isGoalIntakeExceeded ERROR: \(error.localizedDescription)")
             isUpdatedGoalCaffeineIntake.onError(error)
         }
-    }
-    private func convertStringToInt(_ value: String) -> Int {
-        let inputData = value.split(separator: " ").map(String.init)
-        guard let value = inputData.first,
-              let valueInt = Int(value) else { return 0 }
-        return valueInt
+        
+        NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+        isUpdatedGoalCaffeineIntake.onNext(true)
     }
     
-    private func convertCaffeineIsGoalIntakeExceeded(_ savedData: String, goalData: String) -> Bool {
-        let savedDataToInt = convertStringToInt(savedData)
-        let goalDataToInt = convertStringToInt(goalData)
-        return savedDataToInt > goalDataToInt
-    }
-    
-    private func convertWaterIsGoalIntakeExceeded(_ savedData: String, goalData: String) -> Bool {
-        let goalData = goalData.split(separator: " ").map(String.init)
-        guard let goalDataString = goalData.first,
-              let savedDataToInt = Int(savedData),
-              let goalDataToInt = Int(goalDataString) else { return false }
-        return savedDataToInt < goalDataToInt
+    func isEmptyIntakeValue(_ intakeValue: String) -> Bool {
+        return !intakeValue.isEmpty && !(intakeValue == "")
     }
 }

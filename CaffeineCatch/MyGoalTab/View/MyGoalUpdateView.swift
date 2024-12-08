@@ -125,7 +125,7 @@ extension MyGoalUpdateView {
     
     private func setLayoutConstraints() {
         NSLayoutConstraint.activate([
-            mgButton.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 48.0),
+            mgButton.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 120.0),
             mgButton.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor, constant: -24.0),
             mgButton.heightAnchor.constraint(equalToConstant: 40.0),
             mgButton.widthAnchor.constraint(equalToConstant: 80.0),
@@ -163,7 +163,8 @@ extension MyGoalUpdateView {
             descriptionLabel.topAnchor.constraint(equalTo: goalWaterUpdateButton.bottomAnchor, constant: 24.0),
             descriptionLabel.leadingAnchor.constraint(equalTo: goalCaffeineUpdateButton.leadingAnchor),
             descriptionLabel.trailingAnchor.constraint(equalTo: goalCaffeineUpdateButton.trailingAnchor),
-            descriptionLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -48.0)
+            descriptionLabel.heightAnchor.constraint(equalToConstant: 50.0)
+//            descriptionLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -48.0)
         ])
     }
 }

@@ -182,12 +182,17 @@ extension TutorialGoalCaffeineIntakeViewController {
                         view.waterButton
                     ].filter { $0.isSelected }
                     guard let selectedButton = unitButtons.first,
-                          let unitValue = selectedButton.titleLabel?.text,
                           let intakeValue = view.directInputTextField.text,
                           !intakeValue.isEmpty,
-                          intakeValue != "" else { return }  // 선택, 입력해야해욧!!!!!!!!!!!!!!!!!!
+                          intakeValue != "",
+                          let intakeValueToInt = Int(intakeValue) else { return }  // 선택, 입력해야해욧!!!!!!!!!!!!!!!!!!
                     let isWater = selectedButton == view.waterButton
-                    self?.tutorialViewModel.saveGoalCaffeineIntake("\(intakeValue) \(unitValue)", isWater: isWater)
+                    let intakeCategory = isWater ? IntakeCategory.water.rawValue : IntakeCategory.caffeine.rawValue
+                    let intakeUnit = isWater ? IntakeUnitName.mL.rawValue : IntakeUnitName.shot.rawValue
+                    self?.tutorialViewModel.saveGoalCaffeineIntake(intakeCategory: intakeCategory,
+                                                                   intakeUnitValue: intakeUnit,
+                                                                   intakeValue: intakeValueToInt,
+                                                                   isWater: isWater)
                     return
                     
                 default: return // 에러 처리
