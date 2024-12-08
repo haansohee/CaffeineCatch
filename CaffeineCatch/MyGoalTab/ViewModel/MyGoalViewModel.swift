@@ -95,11 +95,13 @@ final class MyGoalViewModel {
                 .filter { $0.isCaffeine }
                 .forEach {
                     $0.isGoalIntakeExceeded = $0.intake > updateGoalIntakeValue
+                    print("isGoalIntakeExceeded: \($0.isGoalIntakeExceeded)")
                 }
             caffeineRecords
                 .filter { !$0.isCaffeine }
                 .forEach {
                     $0.isGoalIntakeExceeded = false
+                    print("isGoalIntakeExceeded: \($0.isGoalIntakeExceeded)")
                 }
             try caffeineContext.save()
         } catch {
@@ -110,7 +112,7 @@ final class MyGoalViewModel {
         isUpdatedGoalCaffeineIntake.onNext(true)
     }
     
-    func updateWaterCaffeineIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
+    func updateGoalWaterIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
         let userContext = appDelegate.userPersistentContainer.viewContext
         let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
         let fetchUserRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
@@ -136,10 +138,11 @@ final class MyGoalViewModel {
         do {
             let caffeineRecords = try caffeineContext.fetch(fetchCaffeineRequest)
             caffeineRecords.forEach {
-                guard !$0.isCaffeine else {
+                $0.isGoalIntakeExceeded = $0.intake <= updateGoalIntakeValue
+                if $0.isCaffeine && $0.intake >= 1 {
+                    
                     $0.isGoalIntakeExceeded = true
-                    return }
-                $0.isGoalIntakeExceeded = $0.waterIntake < updateGoalIntakeValue
+                }
             }
             try caffeineContext.save()
         } catch {

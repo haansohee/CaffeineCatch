@@ -55,6 +55,24 @@ final class RecordViewModel {
         }
     }
     
+    func fetchDateStatus() {
+            let context = appDelegate.caffeinePersistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+            fetchRequest.predicate = NSPredicate(format: "caffeineIntakeDate != nil")
+            do {
+                let goalIntakeExceededInfos = try context.fetch(fetchRequest)
+                goalIntakeExceededInfos.forEach {
+                    guard let dateString = $0.caffeineIntakeDate,
+                          let date = dateString.toDate() else { return }
+                    dateStatus[date] = $0.isGoalIntakeExceeded
+                }
+                isFetchedDateStatus.onNext(true)
+            } catch {
+                print("error fetchDateStatus: \(error.localizedDescription)")
+                isFetchedDateStatus.onNext(false)
+            }
+        }
+    
     private func convertToSectionOfInTakeNonCaffeineData(_ intake: Int, _ category: String, _ unit: String) -> SectionOfInTakeNonCaffeineData {
         return .init(header: SectionHeaderName.nonCaffeine.rawValue, items: [InTakeNonCaffeineData(category: category, unit: unit, intake: intake)])
     }
@@ -169,7 +187,7 @@ final class RecordViewModel {
             if let waterIntakeDatas = waterIntakes.first { // 물 섭취 기록이 있을 경우
                 let waterIntakeInfoUpdateObject = waterIntakeDatas as NSManagedObject
                 let newWaterIntake = Int(waterIntakeDatas.waterIntake) + intake
-                waterIntakeInfoUpdateObject.setValue(Int32(newWaterIntake), forKey: CoreDataAttributes.waterIntake.rawValue)
+                waterIntakeInfoUpdateObject.setValue(Int32(newWaterIntake), forKey: CoreDataAttributes.intake.rawValue)
                 if isZeroCaffeineUser {
                     waterIntakeInfoUpdateObject.setValue(newWaterIntake <= userInfo.goalIntake, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
                 }

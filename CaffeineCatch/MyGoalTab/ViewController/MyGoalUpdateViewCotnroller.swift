@@ -183,7 +183,7 @@ extension MyGoalUpdateViewCotnroller {
                 guard let intakeValue = view.waterInputTextField.validatedText(),
                       let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
 //                self?.myGoalViewModel.updateWaterCaffeineIntake("\(intakeValue) mL")
-                self?.myGoalViewModel.updateWaterCaffeineIntake(intakeValueToInt, IntakeUnitName.mL.rawValue)
+                self?.myGoalViewModel.updateGoalWaterIntake(intakeValueToInt, IntakeUnitName.mL.rawValue)
             })
             .disposed(by: disposeBag)
     }
@@ -193,6 +193,7 @@ extension MyGoalUpdateViewCotnroller {
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isUpdatedGoalCaffeineIntake in
                 guard isUpdatedGoalCaffeineIntake else { return }  // 에러 처리, 성공 처리 하십시옹 담곰씨
+                print("업데이트 완료")
             })
             .disposed(by: disposeBag)
     }
