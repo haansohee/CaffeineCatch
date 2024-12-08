@@ -11,7 +11,8 @@ import UIKit
 import CoreData
 
 enum MyError: Error {
-    case noData
+    case noDataError
+    case calculationError
 }
 
 final class MyGoalViewModel {
@@ -23,8 +24,8 @@ final class MyGoalViewModel {
         items: [AverageCaffeineData(caffeineData: "믹스커피\n(10g, 1봉)", mgData: "81.3mg")]
                 )])
     let isSavedCoreData = PublishSubject<Bool>()
+    let userInfoSubject = BehaviorSubject(value: (intakeValue: "0", isZeroCaffeineUser: false))
     let isUpdatedGoalCaffeineIntake = PublishSubject<Bool>()
-    let myGoalCaffeineIntakeSubject = BehaviorSubject(value: "0")
     
     func loadSectionData() {
         let averageCaffeineData = [SectionOfAverageCaffeineData(
@@ -47,50 +48,110 @@ final class MyGoalViewModel {
         let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
         do {
             let userInfos = try context.fetch(fetchUserReqeust)
-            guard let userInfo = userInfos.first,
-                  let goalCaffeineIntake = userInfo.goalCaffeineIntake else {
-                myGoalCaffeineIntakeSubject.onError(MyError.noData)
+            guard let userInfo = userInfos.first else {
+                userInfoSubject.onError(MyError.noDataError)
                 return }
-            myGoalCaffeineIntakeSubject.onNext(goalCaffeineIntake)
+            let goalIntakeValue = userInfo.goalCaffeineIntake == 0 ? userInfo.goalWaterIntake : userInfo.goalCaffeineIntake
+            guard let goalIntakeUnit = userInfo.goalIntakeUnit,
+                  let goalIntakeCategory = userInfo.goalIntakeCategory else {
+                userInfoSubject.onError(MyError.noDataError)
+                return }
+            let goalIntake = "\(goalIntakeCategory) \(goalIntakeValue) \(goalIntakeUnit)"
+            let isZeroCaffeine = userInfo.isZeroCaffeine
+            userInfoSubject.onNext((goalIntake, isZeroCaffeine))
         } catch {
             print("!! Fetch MyGoal Caffeine Intake Error: \(error.localizedDescription)")
-            myGoalCaffeineIntakeSubject.onError(error)
+            userInfoSubject.onError(error)
         }
     }
     
-    func updateGoalCaffeineIntake(_ updateData: String) {
+    func updateGoalCaffeineIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
         let context = appDelegate.userPersistentContainer.viewContext
+        let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
         let fetchUserReqeust = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
-        guard let insertIntakeValue = updateData.convertMgToShot() else {
-            isUpdatedGoalCaffeineIntake.onNext(false)
-            return }
+        let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+        let insertIntakeValue = updateGoalIntakeValue.convertMgToShot(updateGoalIntakeUnit)
+        
         do {
             let userInfos = try context.fetch(fetchUserReqeust)
             guard let userInfo = userInfos.first else {
                 isUpdatedGoalCaffeineIntake.onNext(false)
                 return }
             let userInfoManagedObject = userInfo as NSManagedObject
-            userInfoManagedObject.setValue("\(insertIntakeValue) 이하", forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue(Int32(insertIntakeValue), forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue(updateGoalIntakeUnit, forKey: CoreDataAttributes.goalIntakeUnit.rawValue)
+            userInfoManagedObject.setValue(IntakeCategory.caffeine.rawValue, forKey: CoreDataAttributes.goalIntakeCategory.rawValue)
+            userInfoManagedObject.setValue(nil, forKey: CoreDataAttributes.goalWaterIntake.rawValue)
+            userInfoManagedObject.setValue(false, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
             try context.save()
-            NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
-            isUpdatedGoalCaffeineIntake.onNext(true)
         } catch {
-            print("!! Update Goal Caffeine Intake ERROR: \(error.localizedDescription)")
+            print("Update Goal Caffeine Intake ERROR: \(error.localizedDescription)")
             isUpdatedGoalCaffeineIntake.onError(error)
         }
+        
+        do {
+            let caffeineRecords = try caffeineContext.fetch(fetchCaffeineRequest)
+            caffeineRecords
+                .filter { $0.isCaffeine }
+                .forEach {
+                    $0.isGoalIntakeExceeded = $0.intake > updateGoalIntakeValue
+                }
+            caffeineRecords
+                .filter { !$0.isCaffeine }
+                .forEach {
+                    $0.isGoalIntakeExceeded = false
+                }
+            try caffeineContext.save()
+        } catch {
+            print("Update Caffeine isGoalIntakeExceeded ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+        NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+        isUpdatedGoalCaffeineIntake.onNext(true)
     }
     
-//    func deleteAllData() { 나중에 쓸 녀석이라 안 지웠어요..
-//        let context = appDelegate.userPersistentContainer.viewContext
-//        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: EntityName.UserInfo.rawValue)
-//        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-//        
-//        do {
-//            try context.execute(deleteRequest)
-//            try context.save()
-//            print("모든 데이터 삭제 완료~~")
-//        } catch {
-//            print("데이터 삭제 실패: \(error)")
-//        }
-//    }
+    func updateWaterCaffeineIntake(_ updateGoalIntakeValue: Int, _ updateGoalIntakeUnit: String) {
+        let userContext = appDelegate.userPersistentContainer.viewContext
+        let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
+        let fetchUserRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
+        let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+        
+        do {
+            let userInfos = try userContext.fetch(fetchUserRequest)
+            guard let userInfo = userInfos.first else {
+                isUpdatedGoalCaffeineIntake.onNext(false)
+                return }
+            let userInfoManagedObject = userInfo as NSManagedObject
+            userInfoManagedObject.setValue(nil, forKey: CoreDataAttributes.goalCaffeineIntake.rawValue)
+            userInfoManagedObject.setValue(Int32(updateGoalIntakeValue), forKey: CoreDataAttributes.goalWaterIntake.rawValue)
+            userInfoManagedObject.setValue(updateGoalIntakeUnit, forKey: CoreDataAttributes.goalIntakeUnit.rawValue)
+            userInfoManagedObject.setValue(IntakeCategory.water.rawValue, forKey: CoreDataAttributes.goalIntakeCategory.rawValue)
+            userInfoManagedObject.setValue(true, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
+            try userContext.save()
+        } catch {
+            print("Update Goal Water Intake ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+        
+        do {
+            let caffeineRecords = try caffeineContext.fetch(fetchCaffeineRequest)
+            caffeineRecords.forEach {
+                guard !$0.isCaffeine else {
+                    $0.isGoalIntakeExceeded = true
+                    return }
+                $0.isGoalIntakeExceeded = $0.waterIntake < updateGoalIntakeValue
+            }
+            try caffeineContext.save()
+        } catch {
+            print("Update Water isGoalIntakeExceeded ERROR: \(error.localizedDescription)")
+            isUpdatedGoalCaffeineIntake.onError(error)
+        }
+        
+        NotificationCenter.default.post(name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+        isUpdatedGoalCaffeineIntake.onNext(true)
+    }
+    
+    func isEmptyIntakeValue(_ intakeValue: String) -> Bool {
+        return !intakeValue.isEmpty && !(intakeValue == "")
+    }
 }

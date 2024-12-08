@@ -29,6 +29,9 @@ final class MainTabBarController: UITabBarController {
         let recordTab = UINavigationController(rootViewController: RecordViewController())
         recordTab.tabBarItem = UITabBarItem(title: "기록", image: UIImage(systemName: "square.and.pencil"), tag: 1)
         viewControllers = [myGoalTab, recordTab]
+        let statisticsTab = UINavigationController(rootViewController: StatisticsViewController())
+        statisticsTab.tabBarItem = UITabBarItem(title: "통계", image: UIImage(systemName: "chart.bar"), tag: 2)
+        viewControllers = [myGoalTab, recordTab, statisticsTab]
         tabBarController?.setViewControllers(viewControllers, animated: true)
     }
 }

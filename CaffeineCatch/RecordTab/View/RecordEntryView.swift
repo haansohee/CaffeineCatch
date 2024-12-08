@@ -128,7 +128,7 @@ final class RecordEntryView: UIScrollView {
     
     let waterIntakeButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("물", for: .normal)
+        button.setTitle(IntakeCategory.water.rawValue, for: .normal)
         button.layer.cornerRadius = 10.0
         button.tag = 0
         return button
@@ -136,7 +136,7 @@ final class RecordEntryView: UIScrollView {
     
     let nonCaffeineIntakeButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("디카페인", for: .normal)
+        button.setTitle(IntakeCategory.nonCaffeine.rawValue, for: .normal)
         button.layer.cornerRadius = 10.0
         button.tag = 0
         return button
@@ -144,7 +144,7 @@ final class RecordEntryView: UIScrollView {
     
     let milkIntakeButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("우유", for: .normal)
+        button.setTitle(IntakeCategory.milk.rawValue, for: .normal)
         button.layer.cornerRadius = 10.0
         button.tag = 0
         return button
@@ -152,7 +152,7 @@ final class RecordEntryView: UIScrollView {
     
     let teaIntakeButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("차", for: .normal)
+        button.setTitle(IntakeCategory.tea.rawValue, for: .normal)
         button.layer.cornerRadius = 10.0
         button.tag = 0
         return button
@@ -160,7 +160,7 @@ final class RecordEntryView: UIScrollView {
     
     let anotherIntakeButton: IntakeButton = {
         let button = IntakeButton()
-        button.setTitle("기타", for: .normal)
+        button.setTitle(IntakeCategory.another.rawValue, for: .normal)
         button.layer.cornerRadius = 10.0
         button.tag = 0
         return button

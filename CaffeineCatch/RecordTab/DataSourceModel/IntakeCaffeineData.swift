@@ -10,7 +10,9 @@ import RxDataSources
 
 
 struct InTakeNonCaffeineData {
-    var nonCaffeine: String
+    var category: String
+    var unit: String
+    var intake: Int
 }
 
 struct SectionOfInTakeNonCaffeineData {

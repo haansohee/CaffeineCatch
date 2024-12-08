@@ -129,19 +129,18 @@ extension TutorialUsualCaffeineIntakeViewController {
                     view.fourShotOrMoreButton
                 ].filter { $0.isSelected }
                 guard let selectedButton = buttons.first else { return }  // 선택해야해욧!! 선택해야 보이는 버튼이지만. 쩄뜬. 에러 처리 담곰씨
-                print("selectedButton: \(selectedButton.titleLabel?.text)")
                 switch selectedButton {
                 case view.twoShotOrLessButton:
-                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.oneShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(1)
                     return
                 case view.twoShotButton:
-                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.twoShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(2)
                     return
                 case view.threeShotButton:
-                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.threeShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(3)
                     return
                 case view.fourShotOrMoreButton:
-                    self?.tutorialViewModel.saveUsualCaffeineIntake(Caffeine.fourShot.rawValue)
+                    self?.tutorialViewModel.saveUsualCaffeineIntake(4)
                     return
                 default: return
                 }
