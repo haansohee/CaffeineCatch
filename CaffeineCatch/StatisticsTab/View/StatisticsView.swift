@@ -6,15 +6,17 @@
 //
 
 import UIKit
+//import Charts
+import DGCharts
 
 final class StatisticsView: UIView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "이번 달 나의 섭취 기록 통계예요. 📊"
+        label.text = "📊 이번 달 나의 섭취 기록 통계"
         label.textColor = .label
         label.textAlignment = .left
-        label.font = .systemFont(ofSize: 15.0, weight: .bold)
+        label.font = .systemFont(ofSize: 20.0, weight: .bold)
         return label
     }()
     
@@ -58,14 +60,17 @@ final class StatisticsView: UIView {
         return label
     }()
     
-    private let nonCaffeineDatasLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "우유 150mL"
-        label.textColor = .label
-        label.textAlignment = .left
-        label.font = .systemFont(ofSize: 12.0, weight: .light)
-        return label
+    let nonCaffenineInTakeCollecionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.sectionInset = UIEdgeInsets(top: 5, left: 10, bottom: 5, right: 10)
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 8.0
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.register(CaffeineIntakeCollectionViewCell.self, forCellWithReuseIdentifier: CaffeineIntakeCollectionViewCell.reuseIdentifier)
+        collectionView.backgroundColor = .systemBackground
+        return collectionView
     }()
     
     private let waterDatasLabel: UILabel = {
@@ -78,12 +83,16 @@ final class StatisticsView: UIView {
         return label
     }()
     
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(systemName: "chart.pie.fill")
-        imageView.tintColor = .lightGray
-        return imageView
+    private let pieChartView: PieChartView = {
+        let pieChartView = PieChartView()
+        pieChartView.translatesAutoresizingMaskIntoConstraints = false
+        let entries = [
+            PieChartDataEntry(value: 100.0, label: "테스트")
+        ]
+        let dataSet = PieChartDataSet(entries: entries, label: "섭취 기록 통계")
+        dataSet.colors = ChartColorTemplates.pastel()
+        pieChartView.data = PieChartData(dataSet: dataSet)
+        return pieChartView
     }()
     
     override init(frame: CGRect) {
@@ -104,10 +113,10 @@ extension StatisticsView {
             caffeineStatisticsLabel,
             caffeineDatasLabel,
             nonCaffeineStatisticsLabel,
-            nonCaffeineDatasLabel,
+            nonCaffenineInTakeCollecionView,
             waterStatisticsLabel,
             waterDatasLabel,
-            imageView
+            pieChartView
         ].forEach { addSubview($0) }
     }
     
@@ -133,12 +142,12 @@ extension StatisticsView {
             nonCaffeineStatisticsLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
             nonCaffeineStatisticsLabel.heightAnchor.constraint(equalTo: titleLabel.heightAnchor),
             
-            nonCaffeineDatasLabel.topAnchor.constraint(equalTo: nonCaffeineStatisticsLabel.bottomAnchor, constant: 12.0),
-            nonCaffeineDatasLabel.leadingAnchor.constraint(equalTo: caffeineDatasLabel.leadingAnchor),
-            nonCaffeineDatasLabel.trailingAnchor.constraint(equalTo: caffeineDatasLabel.trailingAnchor),
-            nonCaffeineDatasLabel.heightAnchor.constraint(equalTo: titleLabel.heightAnchor),
+            nonCaffenineInTakeCollecionView.topAnchor.constraint(equalTo: nonCaffeineStatisticsLabel.bottomAnchor, constant: 12.0),
+            nonCaffenineInTakeCollecionView.leadingAnchor.constraint(equalTo: caffeineDatasLabel.leadingAnchor),
+            nonCaffenineInTakeCollecionView.trailingAnchor.constraint(equalTo: caffeineDatasLabel.trailingAnchor),
+            nonCaffenineInTakeCollecionView.heightAnchor.constraint(equalTo: titleLabel.heightAnchor),
             
-            waterStatisticsLabel.topAnchor.constraint(equalTo: nonCaffeineDatasLabel.bottomAnchor, constant: 36.0),
+            waterStatisticsLabel.topAnchor.constraint(equalTo: nonCaffenineInTakeCollecionView.bottomAnchor, constant: 36.0),
             waterStatisticsLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             waterStatisticsLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
             waterStatisticsLabel.heightAnchor.constraint(equalTo: titleLabel.heightAnchor),
@@ -148,27 +157,31 @@ extension StatisticsView {
             waterDatasLabel.trailingAnchor.constraint(equalTo: caffeineDatasLabel.trailingAnchor),
             waterDatasLabel.heightAnchor.constraint(equalTo: titleLabel.heightAnchor),
             
-            imageView.topAnchor.constraint(equalTo: waterDatasLabel.bottomAnchor, constant: 24.0),
-            imageView.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            imageView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -24.0)
+            pieChartView.topAnchor.constraint(equalTo: waterDatasLabel.bottomAnchor, constant: 24.0),
+            pieChartView.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            pieChartView.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            pieChartView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -24.0)
         ])
     }
     
-    func configureLabel(caffeine: [String?], nonCaffeine: [String?], waters: [String?]) {
-        caffeine.forEach {
-            guard let text = caffeineDatasLabel.text else { return }
-            caffeineDatasLabel.text = "\(text), " + ($0 ?? "")
-        }
-        
-        nonCaffeine.forEach {
-            guard let text = nonCaffeineDatasLabel.text else { return }
-            nonCaffeineDatasLabel.text = "\(text), " + ($0 ?? "")
-        }
-        
-        waters.forEach {
-            guard let text = waterDatasLabel.text else { return }
-            waterDatasLabel.text = "\(text), " + ($0 ?? "")
-        }
+    func configureLabel(caffeine: String, water: String) {
+        caffeineDatasLabel.text = caffeine
+        waterDatasLabel.text = water
+    }
+    
+    func configurePieCharts(_ caffeine: Int, _ water: Int, _ nonCaffeine: Int) {
+        pieChartView.translatesAutoresizingMaskIntoConstraints = false
+        let entries = [
+            PieChartDataEntry(value: Double(caffeine), label: "카페인"),
+            PieChartDataEntry(value: Double(water), label: "물"),
+            PieChartDataEntry(value: Double(nonCaffeine), label: "논카페인")
+        ]
+        let dataSet = PieChartDataSet(entries: entries, label: "")
+        dataSet.colors = [
+            UIColor(red: 74 / 255, green: 144 / 255, blue: 226 / 255, alpha: 0.8),  // 파란색
+            UIColor(red: 245 / 255, green: 166 / 255, blue: 35 / 255, alpha: 0.8),  // 주황색
+            UIColor(red: 126 / 255, green: 211 / 255, blue: 33 / 255, alpha: 0.8)   // 초록색
+            ]
+        pieChartView.data = PieChartData(dataSet: dataSet)
     }
 }

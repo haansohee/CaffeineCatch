@@ -116,7 +116,6 @@ extension RecordViewController {
     private func createCollecitonViewDataSource() -> RxCollectionViewSectionedReloadDataSource<SectionOfInTakeNonCaffeineData> {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionOfInTakeNonCaffeineData>(
             configureCell: { dataSource, collectionView, indexPath, item in
-                print("item: \(item)")
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CaffeineIntakeCollectionViewCell.reuseIdentifier, for: indexPath) as? CaffeineIntakeCollectionViewCell else {
                     return UICollectionViewCell() }
                 let labelText = item.intake == 0 ? "기록이 없어요." : "\(item.category) \(item.intake) \(item.unit)"

@@ -100,8 +100,8 @@ extension MyGoalView {
         NSLayoutConstraint.activate([
             goalSettingImageView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor),
             goalSettingImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            goalSettingImageView.widthAnchor.constraint(equalToConstant: 280.0),
-            goalSettingImageView.heightAnchor.constraint(equalToConstant: 380.0),
+            goalSettingImageView.widthAnchor.constraint(equalToConstant: 200),
+            goalSettingImageView.heightAnchor.constraint(equalToConstant: 300),
 
             goalSettingLabel.centerXAnchor.constraint(equalTo: goalSettingImageView.centerXAnchor),
             goalSettingLabel.centerYAnchor.constraint(equalTo: goalSettingImageView.centerYAnchor, constant: 20.0),

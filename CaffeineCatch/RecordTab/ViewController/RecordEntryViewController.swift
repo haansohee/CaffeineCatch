@@ -250,7 +250,6 @@ extension RecordEntryViewController {
                     view.teaIntakeButton,
                     view.anotherIntakeButton,
                 ].first { $0.isSelected }
-                print("selectedButton: \(selectedButton?.titleLabel?.text ?? "")")
                 
                 switch selectedButton {
                 case view.directInputButton:
