@@ -108,7 +108,8 @@ extension TutorialUsualCaffeineTimeViewController {
                     self?.tutorialViewModel.saveNotificationState(isEnabled: true, time: time)
                     return
                 case view.notificationDisenabledButton:
-                    self?.tutorialViewModel.saveNotificationState(isEnabled: false)
+                    let time = Date().toTimeString()
+                    self?.tutorialViewModel.saveNotificationState(isEnabled: false, time: time)
                     return
                 default: return
                 }

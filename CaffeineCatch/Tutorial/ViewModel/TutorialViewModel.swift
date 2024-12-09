@@ -9,11 +9,14 @@ import Foundation
 import UIKit
 import RxSwift
 import CoreData
+import NotificationCenter
+import UserNotifications
 
 final class TutorialViewModel {
     private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     let isSavedSuccess = PublishSubject<Bool>()
     let caffeineIntakeSubject = BehaviorSubject(value: "0")
+    private var notificationTime: String?
     
     func saveUsualCaffeineIntake(_ caffeineIntake: Int) {
         let context = appDelegate.userPersistentContainer.viewContext
@@ -54,7 +57,6 @@ final class TutorialViewModel {
             guard let recommandCaffeineInatke = recommandCaffeineIntake(Int(usualCaffeineIntake)) else { return }
             let recommandIntake = recommandCaffeineInatke.isZeroCaffeineUser ?
             "\(recommandCaffeineInatke.intakeCategory) \(String(recommandCaffeineInatke.goalIntakeValue)) \(recommandCaffeineInatke.intakeUnit) 이상 마시기" : "\(recommandCaffeineInatke.intakeCategory) \(String(recommandCaffeineInatke.goalIntakeValue)) \(recommandCaffeineInatke.intakeUnit) 이하로 마시기"
-//            caffeineIntakeSubject.onNext(recommandCaffeineInatke.0)
             caffeineIntakeSubject.onNext(recommandIntake)
         } catch {
             print("ERROR save goal caffeine intake: \(error.localizedDescription)")
@@ -103,45 +105,51 @@ final class TutorialViewModel {
             userInfoManagedObject.setValue(isWater, forKey: CoreDataAttributes.isZeroCaffeine.rawValue)
             try context.save()
             isSavedSuccess.onNext(true)
-            } catch {
-                print("ERROR save goal caffeine intake: \(error.localizedDescription)")
-                isSavedSuccess.onNext(false)
-            }
-            
+        } catch {
+            print("ERROR save goal caffeine intake: \(error.localizedDescription)")
+            isSavedSuccess.onNext(false)
         }
         
-        func saveNotificationState(isEnabled: Bool, time: String? = nil) {
-            let context = appDelegate.userPersistentContainer.viewContext
-            do {
-                let fetchRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
-                fetchRequest.predicate = NSPredicate(format: "usualCaffeineIntake != nil")
-                let userInfos = try context.fetch(fetchRequest)
-                guard let userInfo = userInfos.first else {
-                    isSavedSuccess.onNext(false)
-                    return }
-                let userInfoManagedObject = userInfo as NSManagedObject
-                userInfoManagedObject.setValue(isEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
-                userInfoManagedObject.setValue(time ?? nil, forKey: CoreDataAttributes.notificationTime.rawValue)
-                try context.save()
-                UserDefaults.standard.set(true, forKey: UserDefaultsForKeyName.tutorial.rawValue)
-                isSavedSuccess.onNext(true)
-            } catch {
-                print("ERROR save notification state: \(error.localizedDescription)")
+    }
+    
+    func saveNotificationState(isEnabled: Bool, time: String? = nil) {
+        let context = appDelegate.userPersistentContainer.viewContext
+        do {
+            let fetchRequest = NSFetchRequest<UserInfo>(entityName: EntityName.UserInfo.rawValue)
+            fetchRequest.predicate = NSPredicate(format: "usualCaffeineIntake != nil")
+            let userInfos = try context.fetch(fetchRequest)
+            guard let userInfo = userInfos.first,
+                  let notificationTime = time else {
                 isSavedSuccess.onNext(false)
-            }
-        }
-
-        private func recommandCaffeineIntake(_ caffeineIntake: Int) -> (goalIntakeValue: Int,
-                                                                           intakeCategory: String,
-                                                                           intakeUnit: String,
-                                                                           isZeroCaffeineUser: Bool)? {
-            let goalIntakeValue = caffeineIntake == 1 ? 250 : caffeineIntake
-            let intakeCategory = caffeineIntake == 1 ? IntakeCategory.water.rawValue : IntakeCategory.caffeine.rawValue
-            let intakeUnit = caffeineIntake == 1 ? IntakeUnitName.mL.rawValue : IntakeUnitName.shot.rawValue
-            let isZeroCaffeineUser = caffeineIntake == 1
-            return (goalIntakeValue: goalIntakeValue,
-                    intakeCategory: intakeCategory,
-                    intakeUnit: intakeUnit,
-                    isZeroCaffeineUser: isZeroCaffeineUser)
+                return }
+            print("Tutorial time : \(notificationTime)")
+            let userInfoManagedObject = userInfo as NSManagedObject
+            userInfoManagedObject.setValue(isEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
+            userInfoManagedObject.setValue(notificationTime, forKey: CoreDataAttributes.notificationTime.rawValue)
+            
+            UserDefaults.standard.set(notificationTime, forKey: UserDefaultsForKeyName.notificationTime.rawValue)
+            UserDefaults.standard.set(isEnabled, forKey: UserDefaultsForKeyName.notificationEnabled.rawValue)
+            UserDefaults.standard.set(true, forKey: UserDefaultsForKeyName.tutorial.rawValue)
+            
+            try context.save()
+            isSavedSuccess.onNext(true)
+        } catch {
+            print("ERROR save notification state: \(error.localizedDescription)")
+            isSavedSuccess.onNext(false)
         }
     }
+    
+    private func recommandCaffeineIntake(_ caffeineIntake: Int) -> (goalIntakeValue: Int,
+                                                                    intakeCategory: String,
+                                                                    intakeUnit: String,
+                                                                    isZeroCaffeineUser: Bool)? {
+        let goalIntakeValue = caffeineIntake == 1 ? 250 : caffeineIntake
+        let intakeCategory = caffeineIntake == 1 ? IntakeCategory.water.rawValue : IntakeCategory.caffeine.rawValue
+        let intakeUnit = caffeineIntake == 1 ? IntakeUnitName.mL.rawValue : IntakeUnitName.shot.rawValue
+        let isZeroCaffeineUser = caffeineIntake == 1
+        return (goalIntakeValue: goalIntakeValue,
+                intakeCategory: intakeCategory,
+                intakeUnit: intakeUnit,
+                isZeroCaffeineUser: isZeroCaffeineUser)
+    }
+}

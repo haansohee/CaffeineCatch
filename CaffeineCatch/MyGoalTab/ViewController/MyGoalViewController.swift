@@ -13,10 +13,13 @@ import RxDataSources
 final class MyGoalViewController: UIViewController {
     private let myGoalView = MyGoalView()
     private let myGoalViewModel: MyGoalViewModel
+    private let notificationViewModel: NotificationViewModel
     private let disposeBag = DisposeBag()
     
-    init(myPageViewModel: MyGoalViewModel = MyGoalViewModel()) {
+    init(myPageViewModel: MyGoalViewModel = MyGoalViewModel(),
+         notificationViewModel: NotificationViewModel = NotificationViewModel()) {
         self.myGoalViewModel = myPageViewModel
+        self.notificationViewModel = notificationViewModel
         super.init(nibName: nil, bundle: nil)
         self.myGoalViewModel.loadSectionData()
         self.myGoalViewModel.fetchMyGoalCaffeineIntake()
@@ -28,6 +31,7 @@ final class MyGoalViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationManaged.shared.setAuthorization()
         configureMyPageViewController()
         setLayoutConstraints()
         addNotificationUpdateMyGoalCaffeineIntake()
@@ -41,6 +45,7 @@ extension MyGoalViewController {
         myGoalView.translatesAutoresizingMaskIntoConstraints = false
         myGoalView.averageCaffeineCollectionView.delegate = self
         navigationItem.title = "목표"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: myGoalView.notificationButton)
         view.addSubview(myGoalView)
         view.backgroundColor = .secondarySystemBackground
     }
@@ -78,7 +83,17 @@ extension MyGoalViewController {
     private func bindAll() {
         bindAverageCaffeineCollectionViewSection()
         bindMyGoalCaffeineIntakeSubject()
+        bindNotificationButton()
         bindGoalUpdateButton()
+    }
+    
+    private func bindNotificationButton() {
+        myGoalView.notificationButton.rx.tap
+            .asDriver()
+            .drive(onNext: {[weak self] _ in
+                self?.present(NotificationViewController(), animated: true)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func bindAverageCaffeineCollectionViewSection() {
@@ -90,9 +105,9 @@ extension MyGoalViewController {
     private func bindMyGoalCaffeineIntakeSubject() {
         myGoalViewModel.userInfoSubject
             .asDriver(onErrorJustReturn: ("0", false))
-            .drive(onNext: {[ weak self] myGoalCaffeineIntake in
-                let goalIntake = myGoalCaffeineIntake.intakeValue
-                let isZeroCaffeine = myGoalCaffeineIntake.isZeroCaffeineUser
+            .drive(onNext: {[ weak self] userInfoSubject in
+                let goalIntake = userInfoSubject.intakeValue
+                let isZeroCaffeine = userInfoSubject.isZeroCaffeineUser
                 let fullText = isZeroCaffeine ? "제로 카페인! 나의 목표는\n\(goalIntake) 마시기예요" : "나의 하루 카페인 섭취량 목표는\n\n\(goalIntake) 이하예요."
                 let attributedText = NSMutableAttributedString(string: fullText)
                 let range = (fullText as NSString).range(of: goalIntake)

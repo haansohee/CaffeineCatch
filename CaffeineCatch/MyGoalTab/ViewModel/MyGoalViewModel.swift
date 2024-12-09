@@ -16,7 +16,7 @@ enum MyError: Error {
 }
 
 final class MyGoalViewModel {
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var averageCaffeine: [AverageCaffeineData] = []
     let averageCaffeineSectionData = BehaviorSubject(value: [
         SectionOfAverageCaffeineData(
@@ -95,13 +95,11 @@ final class MyGoalViewModel {
                 .filter { $0.isCaffeine }
                 .forEach {
                     $0.isGoalIntakeExceeded = $0.intake > updateGoalIntakeValue
-                    print("isGoalIntakeExceeded: \($0.isGoalIntakeExceeded)")
                 }
             caffeineRecords
                 .filter { !$0.isCaffeine }
                 .forEach {
                     $0.isGoalIntakeExceeded = false
-                    print("isGoalIntakeExceeded: \($0.isGoalIntakeExceeded)")
                 }
             try caffeineContext.save()
         } catch {

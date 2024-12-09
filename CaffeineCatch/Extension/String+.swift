@@ -31,6 +31,13 @@ extension String {
         guard let date = dateFormatter.date(from: self) else { return nil }
         return date
     }
+    
+    func toTime() -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        guard let date = dateFormatter.date(from: self) else { return nil }
+        return date
+    }
 }
 
 extension Int {

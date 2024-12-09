@@ -9,10 +9,6 @@ import Foundation
 import UIKit
 import RxSwift
 
-enum UserDefaultsForKeyName: String {
-    case tutorial
-}
-
 final class SplashViewController: UIViewController {
     private let splashViewModel: SplashViewModel
     private let disposeBag = DisposeBag()
