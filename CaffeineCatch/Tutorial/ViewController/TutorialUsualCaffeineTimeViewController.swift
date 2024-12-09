@@ -120,9 +120,11 @@ extension TutorialUsualCaffeineTimeViewController {
     private func bindIsSavedSuccess() {
         tutorialViewModel.isSavedSuccess
             .asDriver(onErrorJustReturn: false)
-            .drive(onNext: {isSavedSuccess in
+            .drive(onNext: {[weak self] isSavedSuccess in
                 guard isSavedSuccess else {
-                    print("싪패 ") // 에러 처리 하십송 담곰씨
+                    let title = "카페인 캐치"
+                    let message = "저장에 실패했어요. 다시 시도해 주세요."
+                    self?.doneAlert(title: title, message: message)
                     return
                 }
                 guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate else { return }
