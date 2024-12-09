@@ -4,6 +4,7 @@
         <attribute name="caffeineIntakeDate" optional="YES" attributeType="String"/>
         <attribute name="intake" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="intakeCategory" optional="YES" attributeType="String"/>
+        <attribute name="intakeID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="intakeUnit" optional="YES" attributeType="String"/>
         <attribute name="isCaffeine" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isGoalIntakeExceeded" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>

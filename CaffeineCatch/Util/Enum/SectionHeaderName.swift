@@ -10,4 +10,5 @@ import Foundation
 enum SectionHeaderName: String {
     case nonCaffeine
     case averageCaffeine
+    case recordData
 }

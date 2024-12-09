@@ -11,4 +11,5 @@ enum NotificationCenterName: String {
     case UpdateGoalCaffeineIntake
     case updateNotificationStatus
     case notification
+    case deleteData
 }

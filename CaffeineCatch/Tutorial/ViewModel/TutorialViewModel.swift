@@ -122,7 +122,6 @@ final class TutorialViewModel {
                   let notificationTime = time else {
                 isSavedSuccess.onNext(false)
                 return }
-            print("Tutorial time : \(notificationTime)")
             let userInfoManagedObject = userInfo as NSManagedObject
             userInfoManagedObject.setValue(isEnabled, forKey: CoreDataAttributes.notificationEnabled.rawValue)
             userInfoManagedObject.setValue(notificationTime, forKey: CoreDataAttributes.notificationTime.rawValue)

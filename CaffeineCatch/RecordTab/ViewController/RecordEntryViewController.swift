@@ -58,6 +58,35 @@ extension RecordEntryViewController {
         ])
     }
     
+    private func resetButtonsProperty() {
+        let buttons = [
+            recordEntryView.oneShotButton,
+            recordEntryView.twoShotButton,
+            recordEntryView.threeShotButton,
+            recordEntryView.fourShotButton,
+            recordEntryView.directInputButton,
+            recordEntryView.waterIntakeButton,
+            recordEntryView.nonCaffeineIntakeButton,
+            recordEntryView.milkIntakeButton,
+            recordEntryView.teaIntakeButton,
+            recordEntryView.anotherIntakeButton,
+            recordEntryView.shotButton,
+            recordEntryView.mgButton
+        ]
+        
+        let textFields = [
+            recordEntryView.intakeInputTextField,
+            recordEntryView.directInputTextField
+        ]
+        
+        buttons.forEach {
+            $0.isSelected = false
+            $0.backgroundColor = .systemGray6
+            $0.setTitleColor(.label, for: .normal)
+        }
+        textFields.forEach { $0.text = "" }
+    }
+    
     private func changeIntakeButtonsProperty(selectedButton: IntakeButton) {
         var buttons = [
             recordEntryView.oneShotButton,
@@ -84,6 +113,7 @@ extension RecordEntryViewController {
         selectedButton.backgroundColor = .systemBlue
         selectedButton.setTitleColor(.white, for: .normal)
         selectedButton.isSelected = true
+        
         buttons.forEach {
             $0.isSelected = false
             $0.backgroundColor = .systemGray6
@@ -268,11 +298,13 @@ extension RecordEntryViewController {
                     self?.recordViewModel.saveCaffeineIntakeRecord(intakeValueToInt, unitText)
                     
                 case view.nonCaffeineIntakeButton,
+                    view.waterIntakeButton,
                     view.milkIntakeButton,
                     view.teaIntakeButton,
                     view.anotherIntakeButton:
                     let selectedButton = [
                         view.nonCaffeineIntakeButton,
+                        view.waterIntakeButton,
                         view.milkIntakeButton,
                         view.teaIntakeButton,
                         view.anotherIntakeButton
@@ -284,17 +316,11 @@ extension RecordEntryViewController {
                         let message = "섭취량은 숫자로만 입력해 주세요."
                         self?.doneAlert(title: title, message: message)
                         return }
-                    self?.recordViewModel.saveNonCaffeineIntakeRecord(intakeValueToInt, intakeCategory)
-                    
-                case view.waterIntakeButton:
-                    guard let intakeValue = view.intakeInputTextField.validatedText(),
-                          let intakeValueToInt = Int(intakeValue) else {
-                        let title = "카페인 캐치"
-                        let message = "섭취량은 숫자로만 입력해 주세요."
-                        self?.doneAlert(title: title, message: message)
-                        return }
-                    self?.recordViewModel.saveWaterIntakeRecord(intakeValueToInt)
-                    
+                    if intakeCategory == IntakeCategory.water.rawValue {
+                        self?.recordViewModel.saveWaterIntakeRecord(intakeValueToInt)
+                    } else {
+                        self?.recordViewModel.saveNonCaffeineIntakeRecord(intakeValueToInt, intakeCategory)
+                    }
                     
                 case view.oneShotButton,
                     view.twoShotButton,
@@ -320,7 +346,7 @@ extension RecordEntryViewController {
                     
                 default:
                     let title = "카페인 캐치"
-                    let message = "잠시 후에 시도해 주세요."
+                    let message = "내용을 입력해 주세요."
                     self?.doneAlert(title: title, message: message)
                     return 
                 }
@@ -334,6 +360,7 @@ extension RecordEntryViewController {
                 let title = "카페인 캐치"
                 let message = isSavedCoreData ? "섭취량 기록이 저장되었어요." : "저장에 실패하였어요. 다시 시도 해 주세요."
                 self?.doneAlert(title: title, message: message)
+                self?.resetButtonsProperty()
             })
             .disposed(by: disposeBag)
     }

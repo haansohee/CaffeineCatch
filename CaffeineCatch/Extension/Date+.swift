@@ -19,4 +19,10 @@ extension Date {
         dateFormatter.dateFormat = "HH:mm"
         return dateFormatter.string(from: self)
     }
+    
+    static func fromString(_ dateString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd" // 날짜 형식에 맞게 변경, 필요에 따라 수정
+        return formatter.date(from: dateString)
+    }
 }

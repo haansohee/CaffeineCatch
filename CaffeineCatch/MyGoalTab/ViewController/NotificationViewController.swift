@@ -107,7 +107,6 @@ extension NotificationViewController {
                     guard let timeDate = self?.notificationView.datePicker.date,
                           let notificationStatus = self?.notificationView.notificationStatusUpdateButton.isSelected else { return }
                     self?.notificationViewModel.changeNotificationStatus(!notificationStatus, timeDate)
-                    print()
                 default: return 
                 }
             })
