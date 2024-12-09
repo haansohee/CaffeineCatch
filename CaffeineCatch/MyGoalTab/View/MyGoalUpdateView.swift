@@ -164,7 +164,6 @@ extension MyGoalUpdateView {
             descriptionLabel.leadingAnchor.constraint(equalTo: goalCaffeineUpdateButton.leadingAnchor),
             descriptionLabel.trailingAnchor.constraint(equalTo: goalCaffeineUpdateButton.trailingAnchor),
             descriptionLabel.heightAnchor.constraint(equalToConstant: 50.0)
-//            descriptionLabel.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: -48.0)
         ])
     }
 }

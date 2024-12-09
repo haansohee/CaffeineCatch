@@ -8,6 +8,14 @@
 import UIKit
 
 final class MyGoalView: UIView {
+    let notificationButton: AnimationButton = {
+        let button = AnimationButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("알림 설정", for: .normal)
+        button.setTitleColor(UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0), for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16.0, weight: .semibold)
+        return button
+    }()
     
     private let goalSettingImageView: UIImageView = {
         let view = UIImageView()
@@ -100,8 +108,8 @@ extension MyGoalView {
         NSLayoutConstraint.activate([
             goalSettingImageView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor),
             goalSettingImageView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            goalSettingImageView.widthAnchor.constraint(equalToConstant: 200),
-            goalSettingImageView.heightAnchor.constraint(equalToConstant: 300),
+            goalSettingImageView.widthAnchor.constraint(equalToConstant: 220),
+            goalSettingImageView.heightAnchor.constraint(equalToConstant: 320),
 
             goalSettingLabel.centerXAnchor.constraint(equalTo: goalSettingImageView.centerXAnchor),
             goalSettingLabel.centerYAnchor.constraint(equalTo: goalSettingImageView.centerYAnchor, constant: 20.0),

@@ -29,6 +29,8 @@ final class TutorialUsualCaffeineIntakeViewController: UIViewController {
         configureFirstRunUsualCaffeineIntakeView()
         setLayoutConstraints()
         bindAll()
+//        NotificationManaged.shared.scheduleDailyNotification(time: "04:56", notificationEnabled: true)
+//        NotificationManaged.shared.setAuthorization()
     }
     
     override func viewWillAppear(_ animated: Bool) {

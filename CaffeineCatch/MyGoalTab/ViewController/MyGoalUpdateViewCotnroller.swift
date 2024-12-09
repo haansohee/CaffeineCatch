@@ -31,6 +31,7 @@ extension MyGoalUpdateViewCotnroller {
     //MARK: Configure
     private func configureMyGoalUpdateViewCotnroller() {
         myGoalUpdateView.translatesAutoresizingMaskIntoConstraints = false
+        self.modalPresentationCapturesStatusBarAppearance = true
         self.sheetPresentationController?.detents = [.large()]
         self.sheetPresentationController?.prefersGrabberVisible = true
         self.sheetPresentationController?.preferredCornerRadius = 24.0
@@ -118,7 +119,6 @@ extension MyGoalUpdateViewCotnroller {
             .asDriver()
             .drive(onNext: {[weak self] intakeValue in
                 guard let view = self?.myGoalUpdateView else { return }
-//                let isEnabled = !intakeValue.isEmpty && !(intakeValue == "")
                 guard let isEnabled = self?.myGoalViewModel.isEmptyIntakeValue(intakeValue) else { return }
                 view.valueInputTextField.text = ""
                 view.goalCaffeineUpdateButton.isEnabled = false
@@ -182,7 +182,6 @@ extension MyGoalUpdateViewCotnroller {
                 guard let view = self?.myGoalUpdateView else { return }
                 guard let intakeValue = view.waterInputTextField.validatedText(),
                       let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
-//                self?.myGoalViewModel.updateWaterCaffeineIntake("\(intakeValue) mL")
                 self?.myGoalViewModel.updateGoalWaterIntake(intakeValueToInt, IntakeUnitName.mL.rawValue)
             })
             .disposed(by: disposeBag)
