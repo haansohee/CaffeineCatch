@@ -31,11 +31,6 @@ final class NotificationViewController: UIViewController {
         addNotificationStatusUpdate()
         bindAll()
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-//        notificationViewModel.fetchUserInformation()
-    }
 }
 
 extension NotificationViewController {
@@ -123,10 +118,10 @@ extension NotificationViewController {
         notificationViewModel.changedNotificationStatusSubject
             .subscribe(onNext: {[weak self] changedNotificationStatusSubject in
                 guard changedNotificationStatusSubject else {
-                    print("변경 실패")
+                    self?.doneAlert(title: "알림 변경", message: "변경에 실패했어요. 잠시 후에 시도해 주세요.")
                     return
                 }
-                print("변경 성공")
+                self?.doneAlert(title: "알림 변경", message: "변경이 완료되었어요.")
                 self?.notificationViewModel.fetchUserInformation()
             })
             .disposed(by: disposeBag)

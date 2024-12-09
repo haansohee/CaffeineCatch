@@ -168,7 +168,11 @@ extension TutorialGoalCaffeineIntakeViewController {
                     view.directInputButton,
                     view.waterButton
                 ].filter { $0.isSelected }
-                guard let selectedButton = buttons.first else { return }  // 선택해야해욧! 선택해야 보이는 거긴 하지만 ㅎ..
+                guard let selectedButton = buttons.first else {
+                    let title = "카페인 캐치"
+                    let message = "버튼 하나를 선택해야 해요."
+                    self?.doneAlert(title: title, message: message)
+                    return }
                 
                 switch selectedButton {
                 case view.recommandButton:
@@ -185,7 +189,11 @@ extension TutorialGoalCaffeineIntakeViewController {
                           let intakeValue = view.directInputTextField.text,
                           !intakeValue.isEmpty,
                           intakeValue != "",
-                          let intakeValueToInt = Int(intakeValue) else { return }  // 선택, 입력해야해욧!!!!!!!!!!!!!!!!!!
+                          let intakeValueToInt = Int(intakeValue) else {
+                        let title = "카페인 캐치"
+                        let message = "단위 버튼을 선택하고, 목표량은 숫자로만 입력해야 해요."
+                        self?.doneAlert(title: title, message: message)
+                        return }
                     let isWater = selectedButton == view.waterButton
                     let intakeCategory = isWater ? IntakeCategory.water.rawValue : IntakeCategory.caffeine.rawValue
                     let intakeUnit = isWater ? IntakeUnitName.mL.rawValue : IntakeUnitName.shot.rawValue
@@ -195,7 +203,11 @@ extension TutorialGoalCaffeineIntakeViewController {
                                                                    isWater: isWater)
                     return
                     
-                default: return // 에러 처리
+                default:
+                    let title = "카페인 캐치"
+                    let message = "잠시 후 시도해 주세요."
+                    self?.doneAlert(title: title, message: message)
+                    return 
                 }
             })
             .disposed(by: disposeBag)

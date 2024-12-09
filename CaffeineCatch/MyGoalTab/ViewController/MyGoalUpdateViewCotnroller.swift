@@ -168,8 +168,16 @@ extension MyGoalUpdateViewCotnroller {
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.myGoalUpdateView else { return }
                 guard let intakeValue = view.valueInputTextField.validatedText(),
-                      let intakeValueInt = Int(intakeValue) else { return }
-                guard view.mgButton.isSelected || view.shotButton.isSelected else { return }  // 에러 처리 하십시옹 담곰씨
+                      let intakeValueInt = Int(intakeValue) else {
+                    let title = "카페인 캐치"
+                    let message = "목표량은 숫자로만 입력해 주세요."
+                    self?.doneAlert(title: title, message: message)
+                    return }
+                guard view.mgButton.isSelected || view.shotButton.isSelected else {
+                    let title = "카페인 캐치"
+                    let message = "mg 혹은 shot 중 하나를 선택해 주세요."
+                    self?.doneAlert(title: title, message: message)
+                    return }
                 let unitValue = view.mgButton.isSelected ? IntakeUnitName.mg.rawValue : IntakeUnitName.shot.rawValue
                 self?.myGoalViewModel.updateGoalCaffeineIntake(intakeValueInt, unitValue)
             })
@@ -181,7 +189,11 @@ extension MyGoalUpdateViewCotnroller {
             .subscribe(onNext: {[weak self] _ in
                 guard let view = self?.myGoalUpdateView else { return }
                 guard let intakeValue = view.waterInputTextField.validatedText(),
-                      let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+                      let intakeValueToInt = Int(intakeValue) else {
+                    let title = "카페인 캐치"
+                    let message = "목표량은 숫자로만 입력해 주세요."
+                    self?.doneAlert(title: title, message: message)
+                    return }
                 self?.myGoalViewModel.updateGoalWaterIntake(intakeValueToInt, IntakeUnitName.mL.rawValue)
             })
             .disposed(by: disposeBag)
@@ -191,8 +203,9 @@ extension MyGoalUpdateViewCotnroller {
         myGoalViewModel.isUpdatedGoalCaffeineIntake
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isUpdatedGoalCaffeineIntake in
-                guard isUpdatedGoalCaffeineIntake else { return }  // 에러 처리, 성공 처리 하십시옹 담곰씨
-                print("업데이트 완료")
+                let title = "목표 섭취량 수정"
+                let message = isUpdatedGoalCaffeineIntake ? "수정이 완료되었어요." : "수정에 실패했어요. 다시 시도해 주세요."
+                self?.doneAlert(title: title, message: message)
             })
             .disposed(by: disposeBag)
     }

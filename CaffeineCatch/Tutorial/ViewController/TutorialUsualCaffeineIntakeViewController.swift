@@ -130,7 +130,11 @@ extension TutorialUsualCaffeineIntakeViewController {
                     view.threeShotButton,
                     view.fourShotOrMoreButton
                 ].filter { $0.isSelected }
-                guard let selectedButton = buttons.first else { return }  // 선택해야해욧!! 선택해야 보이는 버튼이지만. 쩄뜬. 에러 처리 담곰씨
+                guard let selectedButton = buttons.first else {
+                    let title = "카페인 캐치"
+                    let message = "버튼 하나를 선택해요 해요."
+                    self?.doneAlert(title: title, message: message)
+                    return } 
                 switch selectedButton {
                 case view.twoShotOrLessButton:
                     self?.tutorialViewModel.saveUsualCaffeineIntake(1)

@@ -74,7 +74,11 @@ extension RecordEntryViewController {
             recordEntryView.mgButton
         ]
         
-        guard let selectedIndex = buttons.firstIndex(of: selectedButton) else { return }  // return 될 시 에러 처리 하십시오 담곰씨 (나중에..)
+        guard let selectedIndex = buttons.firstIndex(of: selectedButton) else {
+            let title = "카페인 캐치"
+            let message = "버튼 하나를 선택해야 해요."
+            doneAlert(title: title, message: message)
+            return }
         buttons.remove(at: selectedIndex)
         
         selectedButton.backgroundColor = .systemBlue
@@ -256,7 +260,11 @@ extension RecordEntryViewController {
                     let unitButton = [view.shotButton, view.mgButton].first { $0.isSelected }
                     guard let intakeValue = view.directInputTextField.validatedText(),
                           let unitText = unitButton?.titleLabel?.text,
-                          let intakeValueToInt = Int(intakeValue) else { return } // 에러 처리 하십시옹 담곰씨
+                          let intakeValueToInt = Int(intakeValue) else {
+                        let title = "카페인 캐치"
+                        let message = "섭취량은 숫자로만 입력해 주세요."
+                        self?.doneAlert(title: title, message: message)
+                        return }
                     self?.recordViewModel.saveCaffeineIntakeRecord(intakeValueToInt, unitText)
                     
                 case view.nonCaffeineIntakeButton,
@@ -271,13 +279,20 @@ extension RecordEntryViewController {
                     ].first { $0.isSelected }
                     guard let intakeValue = view.intakeInputTextField.validatedText(),
                           let intakeCategory = selectedButton?.titleLabel?.text,
-                          let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+                          let intakeValueToInt = Int(intakeValue) else {
+                        let title = "카페인 캐치"
+                        let message = "섭취량은 숫자로만 입력해 주세요."
+                        self?.doneAlert(title: title, message: message)
+                        return }
                     self?.recordViewModel.saveNonCaffeineIntakeRecord(intakeValueToInt, intakeCategory)
                     
                 case view.waterIntakeButton:
                     guard let intakeValue = view.intakeInputTextField.validatedText(),
-                          let intakeCategory = selectedButton?.titleLabel?.text,
-                          let intakeValueToInt = Int(intakeValue) else { return }  // 에러 처리 하십시옹 담곰씨
+                          let intakeValueToInt = Int(intakeValue) else {
+                        let title = "카페인 캐치"
+                        let message = "섭취량은 숫자로만 입력해 주세요."
+                        self?.doneAlert(title: title, message: message)
+                        return }
                     self?.recordViewModel.saveWaterIntakeRecord(intakeValueToInt)
                     
                     
@@ -304,7 +319,10 @@ extension RecordEntryViewController {
                     }
                     
                 default:
-                    return // 에러 처리 하십시옹 담곰씨
+                    let title = "카페인 캐치"
+                    let message = "잠시 후에 시도해 주세요."
+                    self?.doneAlert(title: title, message: message)
+                    return 
                 }
             })
             .disposed(by: disposeBag)
@@ -313,8 +331,9 @@ extension RecordEntryViewController {
     private func bindIsSavedCoreData() {
         recordViewModel.isSavedIntakeRecord
             .subscribe(onNext: {[weak self] isSavedCoreData in
-                guard isSavedCoreData else { return } // 에러 처리 하십시옹 담곰씨
-                print("저장이 됐어요^.^")
+                let title = "카페인 캐치"
+                let message = isSavedCoreData ? "섭취량 기록이 저장되었어요." : "저장에 실패하였어요. 다시 시도 해 주세요."
+                self?.doneAlert(title: title, message: message)
             })
             .disposed(by: disposeBag)
     }
