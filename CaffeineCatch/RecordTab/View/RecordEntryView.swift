@@ -12,7 +12,7 @@ final class RecordEntryView: UIScrollView {
         let button = AnimationButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("저장", for: .normal)
-        button.setTitleColor(.systemBlue, for: .normal)
+        button.setTitleColor(UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0), for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 18.0, weight: .semibold)
         return button
     }()

@@ -25,8 +25,6 @@ final class TutorialUsualCaffeineTimeView: UIView {
         datePicker.datePickerMode = .time
         datePicker.preferredDatePickerStyle = .wheels
         datePicker.locale = Locale(identifier: "ko_KR")
-        datePicker.layer.borderColor = UIColor.lightGray.cgColor
-        datePicker.layer.borderWidth = 1.0
         return datePicker
     }()
     

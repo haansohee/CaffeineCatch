@@ -228,9 +228,8 @@ extension TutorialGoalCaffeineIntakeViewController {
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isSavedSuccess in
                 guard isSavedSuccess else {
-                    print("저장실패..")
+                    self?.doneAlert(title: "카페인 캐치", message: "오류가 발생하였어요. 잠시 후 다시 시도해 주세요.")
                     return }
-                print("저장성공^^..")
                 self?.navigationController?.pushViewController(TutorialUsualCaffeineTimeViewController(), animated: true)
             })
             .disposed(by: disposeBag)

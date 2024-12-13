@@ -16,14 +16,23 @@ final class RecordViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let recordView = RecordView()
     private let calenderView = CalendarView()
-    private let recordAddButton: UIButton = {
-        let button = UIButton()
+    private let recordAddButton: AnimationButton = {
+        let button = AnimationButton()
         let imageConfig = UIImage.SymbolConfiguration(pointSize: 50.0, weight: .light)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tintColor = UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0)
         button.backgroundColor = .white
         button.setImage(UIImage(systemName: "plus.circle.fill", withConfiguration: imageConfig), for: .normal)
         button.layer.cornerRadius = 25.0
+        return button
+    }()
+    
+    private let recordModifyButton: AnimationButton = {
+        let button = AnimationButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitleColor(UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0), for: .normal)
+        button.setTitle("기록 수정", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 16.0, weight: .semibold)
         return button
     }()
     
@@ -43,6 +52,7 @@ final class RecordViewController: UIViewController {
         configureRecordViewController()
         configureFSCalendar()
         addNotificationUpdateMyGoalCaffeineIntake()
+        addNotificationDeleteRecordData()
         setLayoutConstraints()
         bindAll()
     }
@@ -60,6 +70,8 @@ extension RecordViewController {
         recordView.translatesAutoresizingMaskIntoConstraints = false
         calenderView.translatesAutoresizingMaskIntoConstraints = false
         navigationItem.title = "기록"
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: recordModifyButton)
+        navigationController?.navigationBar.tintColor =  UIColor(red: 255/255, green: 107/255, blue: 0/255, alpha: 1.0)
         [calenderView, recordView, recordAddButton].forEach { view.addSubview($0) }
         recordView.nonCaffenineInTakeCollecionView.delegate = self
         view.backgroundColor = .secondarySystemBackground
@@ -77,6 +89,10 @@ extension RecordViewController {
     // MARK: NotificationCenter
     private func addNotificationUpdateMyGoalCaffeineIntake() {
         NotificationCenter.default.addObserver(self, selector: #selector(updateMyGoalCaffeineIntake), name: NSNotification.Name(NotificationCenterName.UpdateGoalCaffeineIntake.rawValue), object: nil)
+    }
+    
+    private func addNotificationDeleteRecordData() {
+        NotificationCenter.default.addObserver(self, selector: #selector(updateMyGoalCaffeineIntake), name: NSNotification.Name(NotificationCenterName.deleteData.rawValue), object: nil)
     }
     
     @objc private func updateMyGoalCaffeineIntake() {
@@ -130,6 +146,7 @@ extension RecordViewController {
         bindNonCaffeineInTakeCollectionViewSection()
         bindCaffeineIntakeData()
         bindRecordAddButton()
+        bindRecordModifyButton()
         bindIsFetchedDateStatus()
     }
     
@@ -153,6 +170,15 @@ extension RecordViewController {
             .disposed(by: disposeBag)
     }
     
+    private func bindRecordModifyButton() {
+        recordModifyButton.rx.tap
+            .asDriver()
+            .drive(onNext: {[weak self] _ in
+                self?.navigationController?.pushViewController(RecordModifyViewController(), animated: true)
+            })
+            .disposed(by: disposeBag)
+    }
+    
     private func bindRecordAddButton() {
         recordAddButton.rx.tap
             .asDriver()
@@ -169,7 +195,8 @@ extension RecordViewController {
         recordViewModel.isFetchedDateStatus
             .asDriver(onErrorJustReturn: false)
             .drive(onNext: {[weak self] isFetchedDateStatus in
-                guard isFetchedDateStatus else { return }
+                guard isFetchedDateStatus else {
+                    return }
                 self?.calenderView.reloadData()
             })
             .disposed(by: disposeBag)

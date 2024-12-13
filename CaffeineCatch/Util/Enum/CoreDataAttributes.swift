@@ -16,6 +16,7 @@ enum CoreDataAttributes: String {
     case isZeroCaffeine
     case notificationEnabled
     case notificationTime
+    case intakeID
     case caffeineIntakeDate
     case intake
     case intakeCategory

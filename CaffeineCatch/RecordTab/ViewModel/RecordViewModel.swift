@@ -10,12 +10,8 @@ import CoreData
 import Foundation
 import RxSwift
 
-enum Category: String {
-    case water = "물"
-}
-
 final class RecordViewModel {
-    let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    private let appDelegate = UIApplication.shared.delegate as! AppDelegate
     var nonCaffeineInTakeData: [SectionOfInTakeNonCaffeineData] = []
     let isSavedIntakeRecord = PublishSubject<Bool>()
     let isFetchedDateStatus = PublishSubject<Bool>()
@@ -56,22 +52,23 @@ final class RecordViewModel {
     }
     
     func fetchDateStatus() {
-            let context = appDelegate.caffeinePersistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
-            fetchRequest.predicate = NSPredicate(format: "caffeineIntakeDate != nil")
-            do {
-                let goalIntakeExceededInfos = try context.fetch(fetchRequest)
-                goalIntakeExceededInfos.forEach {
-                    guard let dateString = $0.caffeineIntakeDate,
-                          let date = dateString.toDate() else { return }
-                    dateStatus[date] = $0.isGoalIntakeExceeded
-                }
-                isFetchedDateStatus.onNext(true)
-            } catch {
-                print("error fetchDateStatus: \(error.localizedDescription)")
-                isFetchedDateStatus.onNext(false)
+        dateStatus = [:]
+        let context = appDelegate.caffeinePersistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
+        fetchRequest.predicate = NSPredicate(format: "caffeineIntakeDate != nil")
+        do {
+            let goalIntakeExceededInfos = try context.fetch(fetchRequest)
+            goalIntakeExceededInfos.forEach {
+                guard let dateString = $0.caffeineIntakeDate,
+                      let date = dateString.toDate() else { return }
+                dateStatus[date] = $0.isGoalIntakeExceeded
             }
+            isFetchedDateStatus.onNext(true)
+        } catch {
+            print("error fetchDateStatus: \(error.localizedDescription)")
+            isFetchedDateStatus.onNext(false)
         }
+    }
     
     private func convertToSectionOfInTakeNonCaffeineData(_ intake: Int, _ category: String, _ unit: String) -> SectionOfInTakeNonCaffeineData {
         return .init(header: SectionHeaderName.nonCaffeine.rawValue, items: [InTakeNonCaffeineData(category: category, unit: unit, intake: intake)])
@@ -107,40 +104,33 @@ final class RecordViewModel {
     
     func saveCaffeineIntakeRecord(_ intake: Int, _ intakeUnit: String) {  // 카페인 섭취 기록
         let caffeineContext = appDelegate.caffeinePersistentContainer.viewContext
-        let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
         let entity = NSEntityDescription.entity(forEntityName: EntityName.CaffeineIntakeInfo.rawValue, in: caffeineContext)
         guard let entity,
               let inputDate = selectedDate?.toString() else { return }
-        let newCaffeineIntakeInfo = NSManagedObject(entity: entity, insertInto: caffeineContext)
+        let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
         let inputIntake = intake.convertMgToShot(intakeUnit)  // 새로 기록하는 값
         let userInfo = loadUserInfo()  // 제로 카페인 도전하는 유저인지
         do {
-            fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND isCaffeine == true", inputDate)
+            fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND intakeCategory == %@", inputDate, IntakeCategory.caffeine.rawValue)
             let caffeineIntakes = try caffeineContext.fetch(fetchCaffeineRequest)
+            print("🚨 Fetched CaffeineIntakes: \(caffeineIntakes.count)")
             
             if let caffeineIntakeDatas = caffeineIntakes.first {  // 기존에 입력된 데이터가 있을 경우
-                let caffeineIntakeUpdateObject = caffeineIntakeDatas as NSManagedObject
                 let savedCaffeineIntake = caffeineIntakeDatas.intake
                 let newCaffeineIntake = Int(savedCaffeineIntake) + Int(inputIntake)
-                let isGoalIntakeExceeded = userInfo.isZeroCaffeineUser ? true : newCaffeineIntake > userInfo.goalIntake
-                caffeineIntakeUpdateObject.setValue(inputDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
-                caffeineIntakeUpdateObject.setValue(true, forKey: CoreDataAttributes.isCaffeine.rawValue)
-                caffeineIntakeUpdateObject.setValue(Int32(newCaffeineIntake), forKey: CoreDataAttributes.intake.rawValue)
-                caffeineIntakeUpdateObject.setValue(isGoalIntakeExceeded, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
-                caffeineIntakeUpdateObject.setValue(true, forKey: CoreDataAttributes.isCaffeine.rawValue)
-                caffeineIntakeUpdateObject.setValue(IntakeCategory.caffeine.rawValue, forKey: CoreDataAttributes.intakeCategory.rawValue)
-                caffeineIntakeUpdateObject.setValue(IntakeUnitName.shot.rawValue, forKey: CoreDataAttributes.intakeUnit.rawValue)
+                caffeineIntakeDatas.intake = Int32(newCaffeineIntake)
             } else {  // 기록 데이터가 없고 새로 입력하는 경우
                 let isGoalIntakeExceeded = userInfo.isZeroCaffeineUser ? true : intake > userInfo.goalIntake
+                let newCaffeineIntakeInfo = NSManagedObject(entity: entity, insertInto: caffeineContext)
+                newCaffeineIntakeInfo.setValue(UUID(), forKey: CoreDataAttributes.intakeID.rawValue)
                 newCaffeineIntakeInfo.setValue(inputDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
                 newCaffeineIntakeInfo.setValue(true, forKey: CoreDataAttributes.isCaffeine.rawValue)
                 newCaffeineIntakeInfo.setValue(Int32(intake), forKey: CoreDataAttributes.intake.rawValue)
                 newCaffeineIntakeInfo.setValue(isGoalIntakeExceeded, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
-                newCaffeineIntakeInfo.setValue(true, forKey: CoreDataAttributes.isCaffeine.rawValue)
                 newCaffeineIntakeInfo.setValue(IntakeCategory.caffeine.rawValue, forKey: CoreDataAttributes.intakeCategory.rawValue)
                 newCaffeineIntakeInfo.setValue(IntakeUnitName.shot.rawValue, forKey: CoreDataAttributes.intakeUnit.rawValue)
+                try caffeineContext.save()
             }
-            try caffeineContext.save()
             notificationPost()
             isSavedIntakeRecord.onNext(true)
         } catch {
@@ -156,12 +146,10 @@ final class RecordViewModel {
               let inputDate = selectedDate?.toString() else { return }
         let newCaffeineIntakeInfo = NSManagedObject(entity: entity, insertInto: caffeineContext)
         do {
-            let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
-            fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND isCaffeine == false", inputDate)
+            newCaffeineIntakeInfo.setValue(UUID(), forKey: CoreDataAttributes.intakeID.rawValue)
             newCaffeineIntakeInfo.setValue(inputDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
             newCaffeineIntakeInfo.setValue(false, forKey: CoreDataAttributes.isCaffeine.rawValue)
             newCaffeineIntakeInfo.setValue(Int32(intake), forKey: CoreDataAttributes.intake.rawValue)
-            newCaffeineIntakeInfo.setValue(false, forKey: CoreDataAttributes.isCaffeine.rawValue)
             newCaffeineIntakeInfo.setValue(category, forKey: CoreDataAttributes.intakeCategory.rawValue)
             newCaffeineIntakeInfo.setValue(IntakeUnitName.mL.rawValue, forKey: CoreDataAttributes.intakeUnit.rawValue)
             try caffeineContext.save()
@@ -179,20 +167,17 @@ final class RecordViewModel {
         guard let entity,
               let inputDate = selectedDate?.toString() else { return }
         let fetchCaffeineRequest = NSFetchRequest<CaffeineIntakeInfo>(entityName: EntityName.CaffeineIntakeInfo.rawValue)
-        fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND waterIntake != nil" , inputDate)
         let userInfo = loadUserInfo()  // 제로 카페인 도전하는 유저인지
         let isZeroCaffeineUser = userInfo.isZeroCaffeineUser
         do {
+            fetchCaffeineRequest.predicate = NSPredicate(format: "caffeineIntakeDate == %@ AND intakeCategory == %@" , inputDate, IntakeCategory.water.rawValue)
             let waterIntakes = try caffeineContext.fetch(fetchCaffeineRequest)
             if let waterIntakeDatas = waterIntakes.first { // 물 섭취 기록이 있을 경우
-                let waterIntakeInfoUpdateObject = waterIntakeDatas as NSManagedObject
-                let newWaterIntake = Int(waterIntakeDatas.waterIntake) + intake
-                waterIntakeInfoUpdateObject.setValue(Int32(newWaterIntake), forKey: CoreDataAttributes.intake.rawValue)
-                if isZeroCaffeineUser {
-                    waterIntakeInfoUpdateObject.setValue(newWaterIntake <= userInfo.goalIntake, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
-                }
+                let newWaterIntake = Int(waterIntakeDatas.intake) + intake
+                waterIntakeDatas.intake = Int32(newWaterIntake)
             } else { // 물 섭취 기록이 없을 경우
                 let newCaffeineIntakeInfo = NSManagedObject(entity: entity, insertInto: caffeineContext)
+                newCaffeineIntakeInfo.setValue(UUID(), forKey: CoreDataAttributes.intakeID.rawValue)
                 newCaffeineIntakeInfo.setValue(inputDate, forKey: CoreDataAttributes.caffeineIntakeDate.rawValue)
                 newCaffeineIntakeInfo.setValue(false, forKey: CoreDataAttributes.isCaffeine.rawValue)
                 newCaffeineIntakeInfo.setValue(Int32(intake), forKey: CoreDataAttributes.intake.rawValue)
@@ -203,10 +188,12 @@ final class RecordViewModel {
                     newCaffeineIntakeInfo.setValue(intake <= userInfo.goalIntake, forKey: CoreDataAttributes.isGoalIntakeExceeded.rawValue)
                 }
                 try caffeineContext.save()
-                notificationPost()
-                isSavedIntakeRecord.onNext(true)
             }
+            notificationPost()
+            isSavedIntakeRecord.onNext(true)
         } catch {
+            print("ERROR saveWaterIntakeRecord:  \(error.localizedDescription)")
+            isSavedIntakeRecord.onNext(false)
         }
     }
 }
