@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23507" systemVersion="24A348" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="CaffeineIntakeInfo" representedClassName="CaffeineIntakeInfo" syncable="YES" codeGenerationType="class">
+        <attribute name="caffeineIntakeDate" optional="YES" attributeType="String"/>
+        <attribute name="intake" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="intakeCategory" optional="YES" attributeType="String"/>
+        <attribute name="intakeID" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="intakeUnit" optional="YES" attributeType="String"/>
+        <attribute name="isCaffeine" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isGoalIntakeExceeded" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="waterIntake" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+    </entity>
+</model>
